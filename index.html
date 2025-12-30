@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>nova-ide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              accent: 'var(--accent)',
+              secondary: 'var(--secondary)',
+              tertiary: 'var(--tertiary)',
+              dark: 'var(--bg-dark)',
+              panel: 'var(--bg-panel)',
+              border: 'var(--border)'
+            },
+            borderRadius: {
+              'base': '8px',
+              'large': '12px'
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --bg-panel: #0a0a0a;
+            --border: #111111;
+            --tertiary: #ede1d3;
+            --secondary: #ef4444;
+            --accent: #f97316;
+            
+            --accent-orange: #f97316;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+
+            /* Gradients */
+            --accent-g-red: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+            --accent-g-blue: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+            --accent-g-yellow: linear-gradient(135deg, #facc15 0%, #f97316 100%);
+        }
+
+        .theme-light {
+            --bg-dark: #f0f0f0;
+            --bg-panel: #ffffff;
+            --border: #e2e2e2;
+            --tertiary: #000000;
+        }
+
+        .theme-dawn {
+            --bg-dark: #1b1c1e;
+            --bg-panel: #212226;
+            --border: #2a2b2f;
+            --tertiary: #e1e1e1;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            background-color: var(--bg-dark);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--tertiary);
+            -webkit-font-smoothing: antialiased;
+            font-size: 11px;
+            letter-spacing: 0.02em;
+        }
+
+        #root {
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nova-brand { 
+            text-transform: lowercase !important; 
+            font-family: 'JetBrains Mono', monospace !important;
+            font-weight: 800 !important; 
+            letter-spacing: -0.05em !important; 
+            font-size: 18px !important;
+            line-height: 1 !important;
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .ui-label {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.1em !important;
+            text-transform: uppercase !important;
+        }
+
+        .content-text {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            letter-spacing: normal !important;
+            line-height: 1.6 !important;
+            text-transform: none !important;
+        }
+
+        .code-editor, textarea {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 13px !important;
+            line-height: 1.6 !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+        }
+        
+        .terminal-text {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 11px !important;
+            letter-spacing: 0.05em !important;
+            text-transform: uppercase !important;
+            font-weight: 700 !important;
+        }
+
+        .no-wrap { white-space: nowrap; flex-shrink: 0; }
+        
+        * {
+            transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-color: var(--border) !important;
+        }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        input, textarea { outline: none; }
+        .active-press:active { transform: scale(0.96); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .sidebar-transition {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        *:focus { outline: none; }
+
+        @keyframes lava-flow {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          50% { transform: translateX(100%) skewX(-15deg); }
+          100% { transform: translateX(-100%) skewX(-15deg); }
+        }
+
+        @keyframes lava-glow-pulse {
+          0%, 100% { opacity: 0.05; filter: blur(40px); }
+          50% { opacity: 0.15; filter: blur(80px); }
+        }
+
+        .lava-container {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 5;
+        }
+
+        .lava-overlay {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at center, var(--accent) 0%, transparent 70%);
+          animation: lava-glow-pulse 3s ease-in-out infinite;
+        }
+
+        .lava-wave {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 50%;
+          background: linear-gradient(to right, transparent, var(--accent), transparent);
+          opacity: 0.1;
+          animation: lava-flow 4s ease-in-out infinite;
+          filter: blur(60px);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@^0.474.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="theme-dark">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

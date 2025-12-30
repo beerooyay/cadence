@@ -1,0 +1,5 @@
+{
+  "name": "novaide - polishpy integration",
+  "description": "terminal-native ide with local ai model integration for python code quality",
+  "requestFramePermissions": []
+}
