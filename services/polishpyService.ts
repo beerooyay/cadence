@@ -153,7 +153,8 @@ export const generateAIResponseStream = async (
         body: JSON.stringify({
           prompt: formattedPrompt,
           stream: true,
-          max_tokens: 1024
+          max_tokens: 1024,
+          tools: true
         })
       });
 

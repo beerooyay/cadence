@@ -30,7 +30,9 @@ const FileItem: React.FC<{
 }> = ({ item, depth, onFileClick, files, activeFileId, onDelete, onRename, onCreate }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(item.name);
+  const [editName, setEditName] = useState(item?.name || '');
+  
+  if (!item) return null;
   const isFolder = item.type === 'folder';
   const isActive = item.id === activeFileId;
 
@@ -87,19 +89,23 @@ const FileItem: React.FC<{
         )}
       </div>
 
-      {isFolder && isOpen && item.children?.map(childId => (
-        <FileItem 
-          key={childId} 
-          item={files[childId]} 
-          depth={depth + 1} 
-          onFileClick={onFileClick} 
-          files={files} 
-          activeFileId={activeFileId} 
-          onDelete={onDelete}
-          onRename={onRename}
-          onCreate={onCreate}
-        />
-      ))}
+      {isFolder && isOpen && item.children?.map(childId => {
+        const child = files[childId];
+        if (!child) return null;
+        return (
+          <FileItem 
+            key={childId} 
+            item={child} 
+            depth={depth + 1} 
+            onFileClick={onFileClick} 
+            files={files} 
+            activeFileId={activeFileId} 
+            onDelete={onDelete}
+            onRename={onRename}
+            onCreate={onCreate}
+          />
+        );
+      })}
     </div>
   );
 };
@@ -208,16 +214,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                 />
             </div>
         )}
-        <FileItem 
-          item={files['root']} 
-          depth={0} 
-          onFileClick={onFileClick} 
-          files={files} 
-          activeFileId={activeFileId} 
-          onDelete={onDeleteFile}
-          onRename={onRenameFile}
-          onCreate={(p, t) => setIsCreating({ parentId: p, type: t })}
-        />
+        {(() => {
+          const rootItem = files['root'] || Object.values(files).find((f: FileSystemItem) => f.parentId === null);
+          if (!rootItem) return null;
+          return (
+            <FileItem 
+              item={rootItem} 
+              depth={0} 
+              onFileClick={onFileClick} 
+              files={files} 
+              activeFileId={activeFileId} 
+              onDelete={onDeleteFile}
+              onRename={onRenameFile}
+              onCreate={(p, t) => setIsCreating({ parentId: p, type: t })}
+            />
+          );
+        })()}
       </div>
 
       <div className="mt-auto pt-4 px-5 pb-5 space-y-4 border-t border-border bg-dark/10 relative">

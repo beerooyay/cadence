@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, ChevronRight, Wand2, Check, RefreshCw, X, RotateCcw, ChevronDown, Paperclip, FileText, Image, FileCode, Search, Loader2, PanelRight } from 'lucide-react';
+import { Send, Check, RefreshCw, X, ChevronDown, Paperclip, FileText, Image, FileCode, Search, Loader2, PanelRight, Plus, History } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { generateAIResponseStream } from '../services/polishpyService';
 
@@ -15,6 +15,7 @@ interface AIPanelProps {
   onApplyToSource?: (code: string) => void;
   onRejectMessage?: (id: string) => void;
   onCloseMobile?: () => void;
+  onNewConversation?: () => void;
   isMobileView?: boolean;
   files?: Record<string, any>;
 }
@@ -133,7 +134,7 @@ const FormattedMessage: React.FC<{
 };
 
 const AIPanel: React.FC<AIPanelProps> = ({
-  messages, onSendMessage, onUpdateLastMessage, isProcessing, setProcessing, contextCode, fileTreeSummary, onApplyToSource, onRejectMessage, onCloseMobile, isMobileView, files
+  messages, onSendMessage, onUpdateLastMessage, isProcessing, setProcessing, contextCode, fileTreeSummary, onApplyToSource, onRejectMessage, onCloseMobile, onNewConversation, isMobileView, files
 }) => {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -254,24 +255,31 @@ const AIPanel: React.FC<AIPanelProps> = ({
 
   return (
     <div className="flex flex-col h-full relative" style={{ backgroundColor: 'var(--bg-panel)' }}>
-      {isMobileView && (
-        <div className="flex items-center justify-between px-6 h-12 border-b border-border shrink-0 z-30" style={{ backgroundColor: 'var(--bg-panel)' }}>
-          <div className="flex items-center gap-3">
-            <svg viewBox="0 0 1080 1080" className="w-5 h-5" style={{ fill: 'var(--accent)' }}>
-              <path d="M342.53,430.17c-1.19-3.81-.92-11.44-.53-15.51,2.4-25.28,19.22-44.69,43.2-52.08,16.92-5.3,35.24-3.66,50.95,4.56,12.9,6.83,21.42,18.15,28.08,30.88,28.58,54.62,78.8,89.26,132.69,115.94,14.17,7.01,30.71,14.97,44.01,23.2,8.31,4.4,19.33,10.85,26.88,16.51,37.43,25.76,79.36,64.4,70.45,114.99-7.94,45.05-67.07,65.32-103.03,39.43-16.58-11.71-23.96-30.05-35.58-46.08-8.97-12.14-19.17-23.33-30.43-33.39-22.3-19.96-43.91-32.17-70.53-45.71-5.19-2.64-28.76-13.81-32.28-16.32-5.84-2.42-12.81-6.6-18.42-9.64-48.26-26.17-101.38-67.11-105.46-126.76Z"/>
-              <path d="M667.82,553.65c-1.16.32-2.62.71-3.79.31-16.09-5.58-30.93-9.29-47.74-12.16-4.25-.82-20.46-2.49-22.37-3.28-4.95-.04-11.05-.88-16.1-1.24-41.25-3-83.42-5.82-123.28-17.36-43.46-12.58-87.46-34.87-107.11-78.04-1.43-3.14-3.06-9.32-4.9-11.71,4.09,59.65,57.2,100.6,105.46,126.76,5.61,3.04,12.58,7.22,18.42,9.64,3.52,2.51,27.09,13.68,32.28,16.32,26.62,13.54,48.24,25.75,70.53,45.71,11.26,10.06,21.46,21.25,30.43,33.39,11.62,16.03,19.01,34.37,35.58,46.08,35.97,25.9,95.1,5.62,103.03-39.43,8.91-50.58-33.02-89.22-70.45-114.99Z"/>
-              <path d="M476.59,312.97c-1.19-3.81-.92-11.44-.53-15.51,2.4-25.28,19.22-44.69,43.2-52.08,16.92-5.3,35.24-3.66,50.95,4.56,12.9,6.83,21.42,18.15,28.08,30.88,28.58,54.62,78.8,89.26,132.69,115.94,14.17,7.01,30.71,14.97,44.01,23.2,8.31,4.4,19.33,10.85,26.88,16.51,37.43,25.76,79.36,64.4,70.45,114.99-7.94,45.05-67.07,65.32-103.03,39.43-16.58-11.71-23.96-30.05-35.58-46.08-8.97-12.14-19.17-23.33-30.43-33.39-22.3-19.96-43.91-32.17-70.53-45.71-5.19-2.64-28.76-13.81-32.28-16.32-5.84-2.42-12.81-6.6-18.42-9.64-48.26-26.17-101.38-67.11-105.46-126.76Z"/>
-              <path d="M801.89,436.45c-1.16.32-2.62.71-3.79.31-16.09-5.58-30.93-9.29-47.74-12.16-4.25-.82-20.46-2.49-22.37-3.28-4.95-.04-11.05-.88-16.1-1.24-41.25-3-83.42-5.82-123.28-17.36-43.46-12.58-87.46-34.87-107.11-78.04-1.43-3.14-3.06-9.32-4.9-11.71,4.09,59.65,57.2,100.6,105.46,126.76,5.61,3.04,12.58,7.22,18.42,9.64,3.52,2.51,27.09,13.68,32.28,16.32,26.62,13.54,48.24,25.75,70.53,45.71,11.26,10.06,21.46,21.25,30.43,33.39,11.62,16.03,19.01,34.37,35.58,46.08,35.97,25.9,95.1,5.62,103.03-39.43,8.91-50.58-33.02-89.22-70.45-114.99Z"/>
-              <path d="M207.32,548.37c-1.19-3.81-.92-11.44-.53-15.51,2.4-25.28,19.22-44.69,43.2-52.08,16.92-5.3,35.24-3.66,50.95,4.56,12.9,6.83,21.42,18.15,28.08,30.88,28.58,54.62,78.8,89.26,132.69,115.94,14.17,7.01,30.71,14.97,44.01,23.2,8.31,4.4,19.33,10.85,26.88,16.51,37.43,25.76,79.36,64.4,70.45,114.99-7.94,45.05-67.07,65.32-103.03,39.43-16.58-11.71-23.96-30.05-35.58-46.08-8.97-12.14-19.17-23.33-30.43-33.39-22.3-19.96-43.91-32.17-70.53-45.71-5.19-2.64-28.76-13.81-32.28-16.32-5.84-2.42-12.81-6.6-18.42-9.64-48.26-26.17-101.38-67.11-105.46-126.76Z"/>
-              <path d="M532.61,671.85c-1.16.32-2.62.71-3.79.31-16.09-5.58-30.93-9.29-47.74-12.16-4.25-.82-20.46-2.49-22.37-3.28-4.95-.04-11.05-.88-16.1-1.24-41.25-3-83.42-5.82-123.28-17.36-43.46-12.58-87.46-34.87-107.11-78.04-1.43-3.14-3.06-9.32-4.9-11.71,4.09,59.65,57.2,100.6,105.46,126.76,5.61,3.04,12.58,7.22,18.42,9.64,3.52,2.51,27.09,13.68,32.28,16.32,26.62,13.54,48.24,25.75,70.53,45.71,11.26,10.06,21.46,21.25,30.43,33.39,11.62,16.03,19.01,34.37,35.58,46.08,35.97,25.9,95.1,5.62,103.03-39.43,8.91-50.58-33.02-89.22-70.45-114.99Z"/>
-            </svg>
-            <span className="font-black text-[16px] tracking-wide lowercase text-tertiary">cadence</span>
-          </div>
-          <button onClick={onCloseMobile} className="p-2 transition-colors" style={{ color: 'var(--accent)' }}>
-            <PanelRight className="w-4 h-4" />
+      <div className="flex items-center justify-between px-4 h-10 border-b border-border shrink-0 z-30" style={{ backgroundColor: 'var(--bg-dark)' }}>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={onNewConversation} 
+            className="p-1.5 rounded-md hover:bg-white/5 transition-colors text-tertiary/40 hover:text-accent"
+            title="new conversation"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <button 
+            className="p-1.5 rounded-md hover:bg-white/5 transition-colors text-tertiary/40 hover:text-accent"
+            title="history"
+          >
+            <History className="w-4 h-4" />
           </button>
         </div>
-      )}
+        <div className="w-8" />
+        {isMobileView ? (
+          <button onClick={onCloseMobile} className="p-1.5 rounded-md hover:bg-white/5 transition-colors text-tertiary/40 hover:text-accent">
+            <PanelRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <div className="w-8" />
+        )}
+      </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth" ref={scrollRef}>
         <div className="min-h-full flex flex-col justify-end max-w-4xl mx-auto px-8 py-8 space-y-8">
@@ -304,7 +312,7 @@ const AIPanel: React.FC<AIPanelProps> = ({
         </div>
       </div>
 
-      <div className="px-8 py-6 border-t border-border bg-dark/40 backdrop-blur-2xl shrink-0 z-20 pb-28 lg:pb-10 relative">
+      <div className="px-8 py-6 border-t border-border bg-dark/40 backdrop-blur-2xl shrink-0 z-20 pb-6 relative">
         <div className="max-w-4xl mx-auto">
           {showFilePicker && files && (
             <div className="absolute bottom-full left-8 right-8 mb-2 bg-panel border border-border rounded-[8px] shadow-2xl max-h-60 overflow-y-auto">

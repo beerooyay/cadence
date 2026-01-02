@@ -97,32 +97,45 @@ export const exists = async (path: string): Promise<boolean> => {
   return window.fs!.exists(path);
 };
 
+const SKIP_DIRS = new Set(['node_modules', '.git', '.venv', '__pycache__', 'dist', 'build', '.next', 'venv', 'env']);
+const MAX_DEPTH = 5;
+const MAX_FILES = 500;
+
 export const loadFolderTree = async (rootPath: string): Promise<Record<string, FileNode>> => {
   const nodes: Record<string, FileNode> = {};
+  let fileCount = 0;
   
-  const processDir = async (dirPath: string, parentId: string | null): Promise<string> => {
+  const processDir = async (dirPath: string, parentId: string | null, depth: number): Promise<string> => {
     const name = dirPath.split('/').pop() || dirPath;
     const id = dirPath;
-    
-    const entries = await readDir(dirPath);
     const childIds: string[] = [];
     
-    for (const entry of entries) {
-      if (entry.name.startsWith('.')) continue;
-      
-      if (entry.isDirectory) {
-        const childId = await processDir(entry.path, id);
-        childIds.push(childId);
-      } else if (entry.isFile) {
-        const fileNode: FileNode = {
-          id: entry.path,
-          name: entry.name,
-          path: entry.path,
-          type: 'file',
-          parentId: id
-        };
-        nodes[entry.path] = fileNode;
-        childIds.push(entry.path);
+    if (depth < MAX_DEPTH && fileCount < MAX_FILES) {
+      try {
+        const entries = await readDir(dirPath);
+        
+        for (const entry of entries) {
+          if (fileCount >= MAX_FILES) break;
+          if (entry.name.startsWith('.')) continue;
+          if (SKIP_DIRS.has(entry.name)) continue;
+          
+          if (entry.isDirectory) {
+            const childId = await processDir(entry.path, id, depth + 1);
+            childIds.push(childId);
+          } else if (entry.isFile) {
+            fileCount++;
+            nodes[entry.path] = {
+              id: entry.path,
+              name: entry.name,
+              path: entry.path,
+              type: 'file',
+              parentId: id
+            };
+            childIds.push(entry.path);
+          }
+        }
+      } catch (e) {
+        console.warn('failed to read dir:', dirPath);
       }
     }
     
@@ -138,7 +151,7 @@ export const loadFolderTree = async (rootPath: string): Promise<Record<string, F
     return id;
   };
   
-  await processDir(rootPath, null);
+  await processDir(rootPath, null, 0);
   return nodes;
 };
 

@@ -9,7 +9,7 @@ import { AppState, SecurityTier, FileSystemItem, ChatMessage, ThemeMode, AccentC
 import { PanelLeft, PanelRight } from 'lucide-react';
 import { generateProjectManifest, polishpyCLI } from './services/polishpyService';
 import { saveFileContent, openFolder, loadFolderTree, readFile } from './services/fileSystem';
-import { polishpyCheck, polishpyFormat, polishpyAuto, polishpySyntax, pythonRunCode } from './services/polishpy';
+import { polishpyCheck, polishpyAuto, pythonRunCode } from './services/polishpy';
 
 type ResizeMode = 'sidebar' | 'console' | 'chat' | null;
 
@@ -274,19 +274,22 @@ const App: React.FC = () => {
 
   const onExecute = useCallback(async () => {
     if (!activeFile) return;
-    logToTerminal(`EXECUTING: ${activeFile.name}`);
     
-    try {
-      const result = await pythonRunCode(activeFile.content || '');
-      if (result.success) {
-        logToTerminal(result.output || 'execution complete', 'success');
-      } else {
-        logToTerminal(result.error || 'execution failed', 'error');
+    if (activeFile.path && window.pty) {
+      await handleSaveFile();
+      window.pty.write(`python3 "${activeFile.path}"\n`);
+    } else if (window.pty && activeFile.content) {
+      const tmpPath = `/tmp/cadence_${Date.now()}.py`;
+      try {
+        await window.fs?.writeFile(tmpPath, activeFile.content);
+        window.pty.write(`python3 "${tmpPath}"\n`);
+      } catch {
+        logToTerminal('failed to create temp file', 'error');
       }
-    } catch (e) {
-      logToTerminal('EXECUTION FAILED: python not available', 'error');
+    } else {
+      logToTerminal('no file to execute', 'error');
     }
-  }, [activeFile, logToTerminal]);
+  }, [activeFile, logToTerminal, handleSaveFile]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!resizeModeRef.current) return;
@@ -546,7 +549,7 @@ const App: React.FC = () => {
 
         <div className={`flex flex-col border-l border-border overflow-hidden ${shouldFullscreenChat ? 'fixed inset-0 z-[200] slide-from-right' : isChatOpen ? 'relative' : 'hidden lg:relative'} ${isResizing === 'chat' ? '' : 'sidebar-transition'}`} style={{ width: shouldFullscreenChat ? '100%' : (isChatOpen ? chatWidth : 0), backgroundColor: 'var(--bg-panel)' }}>
           {isChatOpen && !shouldFullscreenChat && <div onMouseDown={startResizing('chat')} className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-[160] hover:bg-accent/20 transition-colors" />}
-          <AIPanel messages={state.messages} onSendMessage={m => setState(s => ({...s, messages: [...s.messages, m]}))} onUpdateLastMessage={text => setState(prev => { const msgs = [...prev.messages]; msgs[msgs.length-1].text = text; return {...prev, messages: msgs}; })} isProcessing={state.isAIProcessing} setProcessing={p => setState(s => ({...s, isAIProcessing: p}))} contextCode={activeFile?.content || ''} fileTreeSummary={projectManifest} onApplyToSource={(code) => setPendingCode(code)} onRejectMessage={(id) => setState(s => ({...s, messages: s.messages.filter(m => m.id !== id)}))} onCloseMobile={() => { setMobileView('dash'); setIsChatOpen(false); }} isMobileView={shouldFullscreenChat} files={state.files} />
+          <AIPanel messages={state.messages} onSendMessage={m => setState(s => ({...s, messages: [...s.messages, m]}))} onUpdateLastMessage={text => setState(prev => { const msgs = [...prev.messages]; msgs[msgs.length-1].text = text; return {...prev, messages: msgs}; })} isProcessing={state.isAIProcessing} setProcessing={p => setState(s => ({...s, isAIProcessing: p}))} contextCode={activeFile?.content || ''} fileTreeSummary={projectManifest} onApplyToSource={(code) => setPendingCode(code)} onRejectMessage={(id) => setState(s => ({...s, messages: s.messages.filter(m => m.id !== id)}))} onCloseMobile={() => { setMobileView('dash'); setIsChatOpen(false); }} onNewConversation={() => setState(s => ({...s, messages: [{ id: Date.now().toString(), role: 'assistant', text: 'cadence ide active. kernel synchronized.', timestamp: Date.now() }]}))} isMobileView={shouldFullscreenChat} files={state.files} />
         </div>
       </div>
       <StatusBar 
