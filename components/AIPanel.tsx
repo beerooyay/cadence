@@ -29,6 +29,8 @@ type Attachment = {
   icon?: string;
 };
 
+const expandedState: Record<string, { think: boolean; terminal: boolean; web: boolean }> = {};
+
 const FormattedMessage: React.FC<{
     messageId: string,
     text: string,
@@ -37,10 +39,15 @@ const FormattedMessage: React.FC<{
     onOpenTerminal?: () => void,
     onTerminalCommand?: (cmd: string) => void
 }> = ({ messageId, text, onApply, onReject, onOpenTerminal, onTerminalCommand }) => {
+  if (!expandedState[messageId]) expandedState[messageId] = { think: false, terminal: false, web: false };
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
-  const [thinkExpanded, setThinkExpanded] = useState(false);
-  const [terminalExpanded, setTerminalExpanded] = useState(false);
-  const [webExpanded, setWebExpanded] = useState(false);
+  const [, forceUpdate] = useState(0);
+  const thinkExpanded = expandedState[messageId].think;
+  const terminalExpanded = expandedState[messageId].terminal;
+  const webExpanded = expandedState[messageId].web;
+  const setThinkExpanded = (v: boolean) => { expandedState[messageId].think = v; forceUpdate(n => n + 1); };
+  const setTerminalExpanded = (v: boolean) => { expandedState[messageId].terminal = v; forceUpdate(n => n + 1); };
+  const setWebExpanded = (v: boolean) => { expandedState[messageId].web = v; forceUpdate(n => n + 1); };
   
   const parseMessage = (raw: string) => {
     const segments: { type: string; content: string }[] = [];
