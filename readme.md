@@ -1,55 +1,52 @@
 # cadence
 
-a local-first ide with ai pair programming, built for apple silicon.
+a custom-built ide powered by local ai models trained on polishpy.
+
+<br/>
+
+![code polish workflow](assets/pic1.png)
+
+*ai-powered code polish with diff preview and accept/reject workflow*
+
+<br/>
+
+![customizable themes](assets/pic2.png)
+
+*customizable themes with gradient accents and local model selection*
+
+<br/>
+
+![conversational ai](assets/pic3.png)
+
+*conversational ai assistant with tool calling and code suggestions*
+
+<br/>
+
+![embedded browser](assets/pic4.png)
+
+*embedded chromium browser with web search and fetch tools for the ai*
+
+<br/>
 
 ---
 
 ## what is cadence?
 
-cadence is a lightweight code editor built from scratch with react, electron, and mlx-optimized language models. runs entirely local - no cloud apis, no telemetry, no subscriptions.
+cadence is a lightweight, terminal-native code editor built from scratch with react, electron, and apple silicon optimized language models. it runs entirely local - no cloud apis, no telemetry, no subscriptions.
 
-trained on polishpy, a python code quality framework. cadence understands python deeply - syntax, style, structure, and intent.
+the cadence model is fine-tuned on polishpy, a python code quality framework that enforces clean, typed, minimal code. this means cadence understands python deeply - not just syntax, but style, structure, and intent.
 
 ---
 
 ## features
 
 - **local llm** - qwen3-4b running on mlx (apple silicon optimized)
-- **tool calling** - read files, write files, execute commands, list directories, web search, web fetch
-- **conversation memory** - context persists across your session
-- **code suggestions** - ai proposes edits with accept/reject workflow
-- **terminal** - full pty terminal with live output
-- **file explorer** - browse, create, edit, delete files
-- **web browser** - embedded chromium with ai-accessible web tools
-- **theming** - 6 accent colors, dark/light/dawn modes, model selection
-
----
-
-<br/>
-
-![terminal and execution](assets/pic2.png)
-
-*working terminal with python execution, math output visible. ai chat panel with thinking indicators and tool capabilities.*
-
-<br/>
-
-![code suggestions](assets/pic1.png)
-
-*ai-powered code suggestions with diff preview. pending changes banner with accept/reject workflow. light theme.*
-
-<br/>
-
-![settings and theming](assets/pic3.png)
-
-*preferences panel with 6 accent colors, theme modes, and local model selection (qwen/llama). blue theme shown.*
-
-<br/>
-
-![web browser integration](assets/pic4.png)
-
-*embedded chromium browser at google.com. ai can search the web and fetch page content for research tasks.*
-
-<br/>
+- **tool calling** - read files, write files, execute commands, list directories
+- **conversation memory** - remembers context across your session
+- **polishpy integration** - automatic type checking, formatting, linting
+- **terminal** - full pty terminal with custom prompt
+- **file explorer** - browse, create, edit files
+- **theming** - dark/light/dawn modes with accent colors
 
 ---
 
@@ -139,4 +136,4 @@ mit
 
 ---
 
-built by @ceeboozwah and @beerooyay
+built by blaize
