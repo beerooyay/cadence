@@ -137,12 +137,14 @@ def gen():
         
         if usetool:
             toolprompt = """tools available:
-- readfile: input: absolute filepath
-- writefile: input: path|||content  
-- execute: input: command (use python3, absolute paths)
-- listdir: input: absolute path
-- webfetch: input: url (fetches and extracts text from webpage)
-- websearch: input: query (returns google search url)
+- readfile: read file contents. input: absolute filepath
+- writefile: write to file. input: path|||content  
+- execute: run shell command. input: command (use python3, absolute paths)
+- listdir: list directory. input: absolute path
+- webfetch: fetch webpage text. input: full url (https://...)
+- websearch: search the web. input: search query
+
+YOU CAN SEARCH THE WEB using webfetch and websearch tools.
 
 format:
 action: toolname
