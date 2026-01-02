@@ -40,6 +40,7 @@ const FormattedMessage: React.FC<{
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [thinkExpanded, setThinkExpanded] = useState(false);
   const [terminalExpanded, setTerminalExpanded] = useState(false);
+  const [webExpanded, setWebExpanded] = useState(false);
   
   const parseMessage = (raw: string) => {
     const segments: { type: string; content: string }[] = [];
@@ -168,21 +169,29 @@ const FormattedMessage: React.FC<{
           );
         }
         if (seg.type === 'action') {
-          const cmd = seg.content.split(': ')[1] || seg.content;
+          const actionParts = seg.content.split(': ');
+          const actionType = actionParts[0]?.toLowerCase() || '';
+          const actionInput = actionParts[1] || seg.content;
           const nextSeg = segments[i + 1];
           const output = nextSeg?.type === 'observation' ? nextSeg.content : '';
           const outputLines = output.split('\n').filter(l => l.trim());
           const preview = outputLines.slice(0, 5).join('\n');
           const hasMore = outputLines.length > 5;
           
+          const isWebAction = actionType === 'webfetch' || actionType === 'websearch';
+          const isTerminalAction = actionType === 'execute';
+          const label = isWebAction ? 'WEB' : 'TERMINAL';
+          const expanded = isWebAction ? webExpanded : terminalExpanded;
+          const setExpanded = isWebAction ? setWebExpanded : setTerminalExpanded;
+          
           return (
             <div key={i} className="my-4">
               <div className="flex items-center gap-2 px-3 py-2 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full">
-                <div onClick={() => setTerminalExpanded(!terminalExpanded)} className="flex items-center gap-2 flex-1 cursor-pointer">
-                  <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${terminalExpanded ? 'rotate-180' : ''}`} />
-                  <span className="ui-label text-[9px] text-tertiary/30 tracking-[0.2em]">TERMINAL</span>
+                <div onClick={() => setExpanded(!expanded)} className="flex items-center gap-2 flex-1 cursor-pointer">
+                  <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                  <span className="ui-label text-[9px] text-tertiary/30 tracking-[0.2em]">{label}</span>
                 </div>
-                {onOpenTerminal && (
+                {isTerminalAction && onOpenTerminal && (
                   <div 
                     onClick={() => onOpenTerminal()} 
                     className="p-1 hover:text-accent text-accent/60 transition-colors cursor-pointer"
@@ -190,10 +199,15 @@ const FormattedMessage: React.FC<{
                     <Terminal className="w-3.5 h-3.5" />
                   </div>
                 )}
+                {isWebAction && (
+                  <div className="p-1 text-accent/60">
+                    <Search className="w-3.5 h-3.5" />
+                  </div>
+                )}
               </div>
-              {terminalExpanded && (
+              {expanded && (
                 <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[150px] overflow-y-auto">
-                  <p className="text-[9px] text-accent/70 font-mono mb-2">{cmd}</p>
+                  <p className="text-[9px] text-accent/70 font-mono mb-2">{actionInput}</p>
                   {output && (
                     <pre className="text-[10px] text-tertiary/50 font-mono whitespace-pre-wrap">
                       {hasMore ? preview + `\n...${outputLines.length - 5} more lines` : output}

@@ -20,7 +20,8 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      webviewTag: true
     }
   });
 
@@ -192,6 +193,39 @@ function registerHandlers() {
   ipcMain.handle('window:close', () => mainWindow?.close());
   ipcMain.handle('window:set-color', (e, color) => {
     if (mainWindow) mainWindow.setBackgroundColor(color);
+  });
+
+  // web fetch for browser tool
+  ipcMain.handle('web:fetch', async (e, url) => {
+    try {
+      const https = require('https');
+      const http = require('http');
+      const protocol = url.startsWith('https') ? https : http;
+      
+      return new Promise((resolve) => {
+        const req = protocol.get(url, { timeout: 10000 }, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            resolve({ success: true, content: data, status: res.statusCode, url });
+          });
+        });
+        req.on('error', (err) => {
+          resolve({ success: false, error: err.message, url });
+        });
+        req.on('timeout', () => {
+          req.destroy();
+          resolve({ success: false, error: 'timeout', url });
+        });
+      });
+    } catch (err) {
+      return { success: false, error: err.message, url };
+    }
+  });
+
+  ipcMain.handle('web:search', async (e, query) => {
+    // return google search url for the query
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   });
 
   // polishpy cli - real integration

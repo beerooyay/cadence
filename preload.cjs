@@ -51,6 +51,11 @@ contextBridge.exposeInMainWorld('shell', {
   exec: (command, cwd) => ipcRenderer.invoke('shell:exec', command, cwd)
 });
 
+contextBridge.exposeInMainWorld('web', {
+  fetch: (url) => ipcRenderer.invoke('web:fetch', url),
+  search: (query) => ipcRenderer.invoke('web:search', query)
+});
+
 contextBridge.exposeInMainWorld('pty', {
   spawn: (cwd) => {
     console.log('[PRELOAD] pty.spawn called');

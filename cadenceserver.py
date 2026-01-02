@@ -54,11 +54,31 @@ def listdir(path):
     except Exception as e:
         return f"error: {e}"
 
+def webfetch(url):
+    try:
+        import urllib.request
+        import re
+        req = urllib.request.Request(url.strip(), headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')[:8000]
+            text = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+            text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
+            text = re.sub(r'<[^>]+>', ' ', text)
+            text = re.sub(r'\s+', ' ', text).strip()
+            return text[:3000]
+    except Exception as e:
+        return f"error: {e}"
+
+def websearch(query):
+    return f"https://www.google.com/search?q={query.replace(' ', '+')}"
+
 tools = {
     "readfile": readfile,
     "writefile": writefile,
     "execute": execute,
-    "listdir": listdir
+    "listdir": listdir,
+    "webfetch": webfetch,
+    "websearch": websearch
 }
 
 def getmodel(name):

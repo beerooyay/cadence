@@ -3,10 +3,11 @@ import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import Sidebar from './components/Sidebar';
 import Editor from './components/Editor';
 import AIPanel from './components/AIPanel';
+import Browser from './components/Browser';
 import StatusBar from './components/StatusBar';
 import { INITIAL_FILES, ACCENTS, THEME } from './constants';
 import { AppState, SecurityTier, FileSystemItem, ChatMessage, ThemeMode, AccentColor, ConsoleLog } from './types';
-import { PanelLeft, PanelRight } from 'lucide-react';
+import { PanelLeft, PanelRight, Globe, Code } from 'lucide-react';
 import { generateProjectManifest, polishpyCLI } from './services/polishpyService';
 import { saveFileContent, openFolder, loadFolderTree, readFile } from './services/fileSystem';
 import { polishpyCheck, polishpyAuto, pythonRunCode } from './services/polishpy';
@@ -51,6 +52,8 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [pendingCode, setPendingCode] = useState<string | null>(null);
+  const [showBrowser, setShowBrowser] = useState(false);
+  const [browserUrl, setBrowserUrl] = useState('https://www.google.com');
   
   const [sidebarWidth, setSidebarWidth] = useState(260);
   const [consoleHeight, setConsoleHeight] = useState(320);
@@ -595,11 +598,18 @@ const App: React.FC = () => {
             <div className="flex items-center gap-2">
               {!isSidebarOpen && <div className="w-16" />}
               <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 transition-opacity ${isSidebarOpen ? 'text-accent' : 'text-tertiary/10 hover:text-accent'}`} style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}><PanelLeft className="w-4 h-4" /></button>
+              <button onClick={() => setShowBrowser(!showBrowser)} className={`p-2 transition-opacity ${showBrowser ? 'text-accent' : 'text-tertiary/10 hover:text-accent'}`} style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+                {showBrowser ? <Code className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+              </button>
             </div>
             <button onClick={() => setIsChatOpen(!isChatOpen)} className={`p-2 transition-opacity ${isChatOpen ? 'text-accent' : 'text-tertiary/10 hover:text-accent'}`} style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}><PanelRight className="w-4 h-4" /></button>
           </div>
 
-          <Editor tabs={state.openTabs} activeFile={activeFile} files={state.files} consoleLogs={state.consoleLogs} consoleHeight={consoleHeight} isResizing={isResizing === 'console'} isPolishing={isPolishing} isScanning={isScanning} pendingCode={pendingCode} onConsoleResize={startResizing('console')} onCloseTab={handleCloseTab} onTabClick={id => handleFileClick(state.files[id])} onCodeChange={handleCodeChange} onExecute={onExecute} onPolish={onPolish} onSyntaxCheck={onSyntaxCheck} onTerminalCommand={handleTerminalCommand} onSave={handleSaveFile} onAcceptPending={() => { if (pendingCode) { handleCodeChange(pendingCode); setPendingCode(null); }}} onRejectPending={() => setPendingCode(null)} />
+          {showBrowser ? (
+            <Browser url={browserUrl} onUrlChange={setBrowserUrl} />
+          ) : (
+            <Editor tabs={state.openTabs} activeFile={activeFile} files={state.files} consoleLogs={state.consoleLogs} consoleHeight={consoleHeight} isResizing={isResizing === 'console'} isPolishing={isPolishing} isScanning={isScanning} pendingCode={pendingCode} onConsoleResize={startResizing('console')} onCloseTab={handleCloseTab} onTabClick={id => handleFileClick(state.files[id])} onCodeChange={handleCodeChange} onExecute={onExecute} onPolish={onPolish} onSyntaxCheck={onSyntaxCheck} onTerminalCommand={handleTerminalCommand} onSave={handleSaveFile} onAcceptPending={() => { if (pendingCode) { handleCodeChange(pendingCode); setPendingCode(null); }}} onRejectPending={() => setPendingCode(null)} />
+          )}
         </main>
 
         <div className={`flex flex-col border-l border-border overflow-hidden ${shouldFullscreenChat ? 'fixed inset-0 z-[200] slide-from-right' : isChatOpen ? 'relative' : 'hidden lg:relative'} ${isResizing === 'chat' ? '' : 'sidebar-transition'}`} style={{ width: shouldFullscreenChat ? '100%' : (isChatOpen ? chatWidth : 0), backgroundColor: 'var(--bg-panel)' }}>
