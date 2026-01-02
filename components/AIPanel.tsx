@@ -524,9 +524,7 @@ const AIPanel: React.FC<AIPanelProps> = ({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth relative" ref={scrollRef}>
-        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-panel to-transparent z-10 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-panel to-transparent z-10 pointer-events-none" />
+      <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth scroll-fade" ref={scrollRef}>
         <div className="min-h-full flex flex-col justify-end max-w-4xl mx-auto px-8 py-8 space-y-8">
           {messages.map((msg, idx) => (
             <div key={msg.id} className="flex flex-col gap-2">

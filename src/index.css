@@ -10,3 +10,8 @@
   --radius-base: 8px;
   --radius-large: 12px;
 }
+
+.scroll-fade {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 24px, black calc(100% - 24px), transparent 100%);
+}

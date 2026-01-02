@@ -99,11 +99,7 @@ const Editor: React.FC<EditorProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-dark">
-        {/* fade gradients at top and bottom */}
-        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-dark to-transparent z-30 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-dark to-transparent z-30 pointer-events-none" />
-        
+      <div className="flex-1 flex flex-col min-h-0 relative bg-dark">
         {isPolishing && (
           <div className="lava-container">
             <div className="lava-overlay" />
@@ -126,7 +122,7 @@ const Editor: React.FC<EditorProps> = ({
           </div>
         ) : (
           <textarea 
-            className="flex-1 bg-transparent p-6 lg:p-10 outline-none code-editor leading-relaxed resize-none text-tertiary selection:bg-accent/20 relative z-20"
+            className="flex-1 bg-transparent p-6 lg:p-10 outline-none code-editor leading-relaxed resize-none text-tertiary selection:bg-accent/20 relative z-20 scroll-fade"
             value={activeFile.content || ''}
             spellCheck={false}
             autoComplete="off"
