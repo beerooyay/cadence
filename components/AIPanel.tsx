@@ -107,6 +107,10 @@ const FormattedMessage: React.FC<{
               <div className="flex items-center gap-2 px-3 py-2.5 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full cursor-pointer" onClick={() => setThinkExpanded(!thinkExpanded)}>
                 <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${thinkExpanded ? 'rotate-180' : ''}`} />
                 <span className="ui-label text-[10px] text-tertiary/30 tracking-[0.15em]">THINKING</span>
+                <div className="flex-1" />
+                <div className="p-1 text-accent/60">
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </div>
               </div>
               {thinkExpanded && (
                 <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[120px] overflow-y-auto">
