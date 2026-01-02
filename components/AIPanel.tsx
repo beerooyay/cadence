@@ -273,9 +273,13 @@ const AIPanel: React.FC<AIPanelProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
 
+  const prevMsgCount = useRef(messages.length);
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, isProcessing]);
+    if (scrollRef.current && messages.length !== prevMsgCount.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      prevMsgCount.current = messages.length;
+    }
+  }, [messages.length]);
 
   useEffect(() => {
     const saved = localStorage.getItem('cadence_conversations');
