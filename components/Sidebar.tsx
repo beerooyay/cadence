@@ -243,7 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <div className="mt-auto pt-4 px-5 pb-5 space-y-4 border-t border-border bg-dark/10 relative" ref={settingsRef}>
         {showSettings && (
-          <div className="absolute bottom-full left-5 right-5 mb-0 p-5 bg-panel border border-border rounded-large animate-in fade-in slide-in-from-bottom-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[200]">
+          <div className="absolute bottom-full left-5 right-5 mb-0 p-5 border border-border rounded-large animate-in fade-in slide-in-from-bottom-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[200]" style={{ backgroundColor: 'var(--bg-dark)' }}>
              <div className="flex justify-between items-center mb-4">
                 <span className="ui-label text-tertiary/30 tracking-[0.2em] font-black">PREFERENCES</span>
                 <button onClick={() => setShowSettings(false)} className="text-tertiary/20 hover:text-secondary transition-colors">
