@@ -103,18 +103,15 @@ const FormattedMessage: React.FC<{
       {segments.map((seg, i) => {
         if (seg.type === 'think') {
           return (
-            <div key={i} className="my-4">
-              <button
-                onClick={() => setThinkExpanded(!thinkExpanded)}
-                className="flex items-center gap-2 px-3 py-2 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full"
-              >
+            <div key={i} className="my-3">
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full cursor-pointer" onClick={() => setThinkExpanded(!thinkExpanded)}>
                 <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${thinkExpanded ? 'rotate-180' : ''}`} />
-                <span className="ui-label text-[9px] text-tertiary/30 tracking-[0.2em]">THOUGHT PROCESS</span>
-              </button>
+                <span className="ui-label text-[10px] text-tertiary/30 tracking-[0.15em]">THINKING</span>
+              </div>
               {thinkExpanded && (
-                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[200px] overflow-y-auto">
-                  <p className="content-text text-[11px] leading-relaxed text-tertiary/50 italic">
-                    {seg.content.slice(0, 500)}{seg.content.length > 500 ? '...' : ''}
+                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[120px] overflow-y-auto">
+                  <p className="text-[11px] leading-relaxed text-tertiary/50 font-mono whitespace-pre-wrap">
+                    {seg.content.slice(0, 300)}{seg.content.length > 300 ? '...' : ''}
                   </p>
                 </div>
               )}
@@ -185,17 +182,13 @@ const FormattedMessage: React.FC<{
           const setExpanded = isWebAction ? setWebExpanded : setTerminalExpanded;
           
           return (
-            <div key={i} className="my-4">
-              <div className="flex items-center gap-2 px-3 py-2 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full">
-                <div onClick={() => setExpanded(!expanded)} className="flex items-center gap-2 flex-1 cursor-pointer">
-                  <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-                  <span className="ui-label text-[9px] text-tertiary/30 tracking-[0.2em]">{label}</span>
-                </div>
+            <div key={i} className="my-3">
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full cursor-pointer" onClick={() => setExpanded(!expanded)}>
+                <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                <span className="ui-label text-[10px] text-tertiary/30 tracking-[0.15em]">{label}</span>
+                <div className="flex-1" />
                 {isTerminalAction && onOpenTerminal && (
-                  <div 
-                    onClick={() => onOpenTerminal()} 
-                    className="p-1 hover:text-accent text-accent/60 transition-colors cursor-pointer"
-                  >
+                  <div onClick={(e) => { e.stopPropagation(); onOpenTerminal(); }} className="p-1 hover:text-accent text-accent/60 transition-colors">
                     <Terminal className="w-3.5 h-3.5" />
                   </div>
                 )}
@@ -206,10 +199,10 @@ const FormattedMessage: React.FC<{
                 )}
               </div>
               {expanded && (
-                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[150px] overflow-y-auto">
-                  <p className="text-[9px] text-accent/70 font-mono mb-2">{actionInput}</p>
+                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[120px] overflow-y-auto">
+                  <p className="text-[11px] text-accent/70 font-mono mb-2 break-all">{actionInput}</p>
                   {output && (
-                    <pre className="text-[10px] text-tertiary/50 font-mono whitespace-pre-wrap">
+                    <pre className="text-[11px] text-tertiary/50 font-mono whitespace-pre-wrap break-words">
                       {hasMore ? preview + `\n...${outputLines.length - 5} more lines` : output}
                     </pre>
                   )}
@@ -222,9 +215,14 @@ const FormattedMessage: React.FC<{
           return null;
         }
         if (seg.type === 'text' && seg.content.trim()) {
-          const content = seg.content.trim();
+          let content = seg.content.trim();
+          // filter out any leaked think content
+          content = content.replace(/<\/?think>/gi, '').replace(/^think>/i, '').trim();
+          if (!content) return null;
           const isTraceback = content.startsWith('Traceback') || content.startsWith('File "') || (content.includes('Error:') && content.includes('line '));
           if (isTraceback) return null;
+          // skip if content is mostly thinking ramble
+          if (content.toLowerCase().includes('okay, the user') || content.toLowerCase().includes('let me check') || content.toLowerCase().includes('wait, the rules')) return null;
           
           const formatLine = (line: string) => {
             const parts = line.split(/(`[^`]+`|'[a-z_]+')/).filter(Boolean);

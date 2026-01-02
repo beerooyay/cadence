@@ -153,7 +153,7 @@ action input: input
 STOP after action input. system provides observation.
 use absolute paths like /Users/...
 if error occurs, explain the error and offer to fix it.
-keep <think> blocks under 50 words. lowercase. concise."""
+CRITICAL: keep <think> blocks under 30 words MAX. be extremely concise. no rambling."""
             msgs.append({"role": "user", "content": f"{toolprompt}\n\nrequest: {prompt}"})
         else:
             msgs.append({"role": "user", "content": prompt})
