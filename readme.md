@@ -2,6 +2,38 @@
 
 a custom-built ide powered by local ai models trained on polishpy.
 
+<br/>
+
+<p align="center">
+  <img src="assets/pic1.png" width="90%" style="border-radius: 12px;" />
+</p>
+
+<p align="center">
+  <em>ai-powered code polish with diff preview and accept/reject workflow</em>
+</p>
+
+<br/>
+
+<p align="center">
+  <img src="assets/pic2.png" width="90%" style="border-radius: 12px;" />
+</p>
+
+<p align="center">
+  <em>customizable themes with gradient accents and local model selection</em>
+</p>
+
+<br/>
+
+<p align="center">
+  <img src="assets/pic3.png" width="90%" style="border-radius: 12px;" />
+</p>
+
+<p align="center">
+  <em>conversational ai assistant with tool calling and code suggestions</em>
+</p>
+
+<br/>
+
 ---
 
 ## what is cadence?
