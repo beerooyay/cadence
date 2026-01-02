@@ -77,19 +77,23 @@ def getmodel(name):
     return cache[name]
 
 def parsetool(text):
-    lines = text.lower().split('\n')
+    lines = text.split('\n')
     action = None
     actioninput = None
+    cutoff = len(text)
     for i, line in enumerate(lines):
-        if 'action:' in line and 'action input' not in line:
-            action = line.split('action:')[1].strip()
-        elif 'action input:' in line:
-            actioninput = line.split('action input:')[1].strip()
+        lower = line.lower()
+        if 'action:' in lower and 'action input' not in lower:
+            action = line.split(':',1)[1].strip().lower()
+        elif 'action input:' in lower:
+            actioninput = line.split(':',1)[1].strip()
             if not actioninput and i + 1 < len(lines):
                 actioninput = lines[i + 1].strip()
+            cutoff = text.lower().find('action input:') + len('action input:') + len(actioninput or '')
+            break
     if action and action in tools:
-        return action, actioninput
-    return None, None
+        return action, actioninput, cutoff
+    return None, None, len(text)
 
 @app.route('/api/generate', methods=['POST'])
 def gen():
@@ -112,18 +116,21 @@ def gen():
             msgs.append({"role": h['role'], "content": h['content']})
         
         if usetool:
-            toolprompt = """you have these tools:
-- readfile: read a file. input: path
-- writefile: write to file. input: path|||content
-- execute: run shell command. input: command
-- listdir: list directory. input: path
+            toolprompt = """tools available:
+- readfile: input: absolute filepath
+- writefile: input: path|||content  
+- execute: input: command (use python3, absolute paths)
+- listdir: input: absolute path
 
-to use a tool, respond with:
+format:
 action: toolname
-action input: the input
+action input: input
 
-after seeing the result, give your final answer."""
-            msgs.append({"role": "user", "content": f"{toolprompt}\n\nuser request: {prompt}"})
+STOP after action input. system provides observation.
+use absolute paths like /Users/...
+if error occurs, explain the error and offer to fix it.
+keep <think> blocks under 50 words. lowercase. concise."""
+            msgs.append({"role": "user", "content": f"{toolprompt}\n\nrequest: {prompt}"})
         else:
             msgs.append({"role": "user", "content": prompt})
         
@@ -131,16 +138,23 @@ after seeing the result, give your final answer."""
         response = generate(m, t, prompt=formatted, max_tokens=maxtok, verbose=False)
         
         if usetool:
-            action, actioninput = parsetool(response)
+            action, actioninput, cutoff = parsetool(response)
+            print(f"[tool] parsed: action={action}, input={actioninput}")
             if action and actioninput:
+                response = response[:cutoff].strip()
+                print(f"[tool] executing {action}({actioninput})")
                 toolresult = tools[action](actioninput)
-                response += f"\n\nobservation: {toolresult}"
+                print(f"[tool] result: {toolresult[:200] if len(toolresult) > 200 else toolresult}")
                 
                 msgs.append({"role": "assistant", "content": response})
-                msgs.append({"role": "user", "content": f"observation: {toolresult}\n\nnow give your final answer."})
+                iserror = 'error' in toolresult.lower() or 'traceback' in toolresult.lower() or 'exception' in toolresult.lower()
+                if iserror:
+                    msgs.append({"role": "user", "content": f"tool result (ERROR):\n{toolresult}\n\nexplain the error simply. offer a fix. ask if user wants you to fix and retry. lowercase, concise."})
+                else:
+                    msgs.append({"role": "user", "content": f"tool result:\n{toolresult}\n\nbrief summary. offer next steps if relevant. lowercase, concise."})
                 formatted2 = t.apply_chat_template(msgs, add_generation_prompt=True, tokenize=False)
-                final = generate(m, t, prompt=formatted2, max_tokens=maxtok, verbose=False)
-                response += f"\n\n{final}"
+                final = generate(m, t, prompt=formatted2, max_tokens=400, verbose=False)
+                response += f"\n\nobservation: {toolresult}\n\n{final}"
         
         history.append({"role": "user", "content": prompt})
         history.append({"role": "assistant", "content": response})

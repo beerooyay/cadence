@@ -37,11 +37,12 @@ const Terminal: React.FC<TerminalProps> = ({ cwd, height = 300 }) => {
       termRef.current = null;
     }
 
-    // get theme colors from CSS variables
+    // get theme colors from CSS variables - fallbacks only used if vars not set
     const cs = getComputedStyle(document.documentElement);
-    const bgDark = cs.getPropertyValue('--bg-dark').trim() || '#050505';
-    const textColor = cs.getPropertyValue('--tertiary').trim() || '#ede1d3';
-    const accentColor = cs.getPropertyValue('--accent').trim() || '#3b82f6';
+    const bgDark = cs.getPropertyValue('--bg-dark').trim();
+    const textColor = cs.getPropertyValue('--tertiary').trim();
+    const accentColor = cs.getPropertyValue('--accent').trim();
+    const accentStart = cs.getPropertyValue('--accent-start').trim() || accentColor;
 
     const term = new XTerm({
       fontFamily: '"JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace',
@@ -52,12 +53,12 @@ const Terminal: React.FC<TerminalProps> = ({ cwd, height = 300 }) => {
       cursorStyle: 'bar',
       allowTransparency: false,
       theme: {
-        background: bgDark,
-        foreground: textColor,
-        cursor: accentColor,
-        cursorAccent: bgDark,
-        selectionBackground: accentColor + '40',
-        selectionForeground: textColor
+        background: bgDark || '#050505',
+        foreground: textColor || '#ede1d3',
+        cursor: accentStart,
+        cursorAccent: bgDark || '#050505',
+        selectionBackground: (accentColor || '#3b82f6') + '40',
+        selectionForeground: textColor || '#ede1d3'
       }
     });
 

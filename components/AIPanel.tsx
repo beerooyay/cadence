@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Check, RefreshCw, X, ChevronDown, Paperclip, FileText, Image, FileCode, Search, Loader2, PanelRight, Plus, History } from 'lucide-react';
+import { Send, Check, RefreshCw, X, ChevronDown, Paperclip, FileText, Image, FileCode, Search, Loader2, PanelRight, Plus, History, Terminal, Edit3, Trash2 } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { generateAIResponseStream } from '../services/polishpyService';
 
@@ -16,6 +16,8 @@ interface AIPanelProps {
   onRejectMessage?: (id: string) => void;
   onCloseMobile?: () => void;
   onNewConversation?: () => void;
+  onOpenTerminal?: () => void;
+  onTerminalCommand?: (cmd: string) => void;
   isMobileView?: boolean;
   files?: Record<string, any>;
 }
@@ -31,11 +33,62 @@ const FormattedMessage: React.FC<{
     messageId: string,
     text: string,
     onApply?: (code: string) => void,
-    onReject?: (id: string) => void
-}> = ({ messageId, text, onApply, onReject }) => {
+    onReject?: (id: string) => void,
+    onOpenTerminal?: () => void,
+    onTerminalCommand?: (cmd: string) => void
+}> = ({ messageId, text, onApply, onReject, onOpenTerminal, onTerminalCommand }) => {
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [thinkExpanded, setThinkExpanded] = useState(false);
-  const parts = text.split(/(```[\s\S]*?```|\*\*[\s\S]*?\*\*|<think>[\s\S]*?<\/think>)/g);
+  const [terminalExpanded, setTerminalExpanded] = useState(false);
+  
+  const parseMessage = (raw: string) => {
+    const segments: { type: string; content: string }[] = [];
+    let remaining = raw;
+    
+    while (remaining.length > 0) {
+      const thinkMatch = remaining.match(/^<think>([\s\S]*?)<\/think>/i);
+      if (thinkMatch) {
+        segments.push({ type: 'think', content: thinkMatch[1] });
+        remaining = remaining.slice(thinkMatch[0].length).trim();
+        continue;
+      }
+      
+      const codeMatch = remaining.match(/^```(\w*)\n?([\s\S]*?)```/);
+      if (codeMatch) {
+        segments.push({ type: 'code', content: codeMatch[0] });
+        remaining = remaining.slice(codeMatch[0].length).trim();
+        continue;
+      }
+      
+      const actionMatch = remaining.match(/^action:\s*(\w+)\s*\naction input:\s*([^\n]+)/i);
+      if (actionMatch) {
+        segments.push({ type: 'action', content: `${actionMatch[1]}: ${actionMatch[2]}` });
+        remaining = remaining.slice(actionMatch[0].length).trim();
+        continue;
+      }
+      
+      const obsMatch = remaining.match(/^observation:\s*([\s\S]*?)(?=\n\n|$)/i);
+      if (obsMatch) {
+        segments.push({ type: 'observation', content: obsMatch[1] });
+        remaining = remaining.slice(obsMatch[0].length).trim();
+        continue;
+      }
+      
+      const nextSpecial = remaining.search(/<think>|```|action:|observation:/i);
+      if (nextSpecial > 0) {
+        segments.push({ type: 'text', content: remaining.slice(0, nextSpecial).trim() });
+        remaining = remaining.slice(nextSpecial);
+      } else if (nextSpecial === -1) {
+        if (remaining.trim()) segments.push({ type: 'text', content: remaining.trim() });
+        break;
+      } else {
+        remaining = remaining.slice(1);
+      }
+    }
+    return segments;
+  };
+  
+  const segments = parseMessage(text);
 
   const handleApply = (code: string) => {
     if (onApply) {
@@ -46,9 +99,8 @@ const FormattedMessage: React.FC<{
 
   return (
     <div className="space-y-3">
-      {parts.map((part, i) => {
-        if (part.startsWith('<think>')) {
-          const thinkContent = part.replace(/<think>/, '').replace(/<\/think>/, '');
+      {segments.map((seg, i) => {
+        if (seg.type === 'think') {
           return (
             <div key={i} className="my-4">
               <button
@@ -59,18 +111,18 @@ const FormattedMessage: React.FC<{
                 <span className="ui-label text-[9px] text-tertiary/30 tracking-[0.2em]">THOUGHT PROCESS</span>
               </button>
               {thinkExpanded && (
-                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px]">
+                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[200px] overflow-y-auto">
                   <p className="content-text text-[11px] leading-relaxed text-tertiary/50 italic">
-                    {thinkContent}
+                    {seg.content.slice(0, 500)}{seg.content.length > 500 ? '...' : ''}
                   </p>
                 </div>
               )}
             </div>
           );
         }
-        if (part.startsWith('```')) {
-          const code = part.replace(/```(\w+)?\n?/, '').replace(/```$/, '');
-          const lang = part.match(/```(\w+)/)?.[1] || '';
+        if (seg.type === 'code') {
+          const code = seg.content.replace(/```(\w+)?\n?/, '').replace(/```$/, '');
+          const lang = seg.content.match(/```(\w+)/)?.[1] || '';
           const isRecentlyApplied = appliedCode === code;
 
           return (
@@ -115,38 +167,153 @@ const FormattedMessage: React.FC<{
             </div>
           );
         }
-        if (part.startsWith('**')) {
-          return <strong key={i} className="text-accent font-black tracking-tight uppercase text-[12px] block mb-1">{part.slice(2, -2)}</strong>;
+        if (seg.type === 'action') {
+          const cmd = seg.content.split(': ')[1] || seg.content;
+          const nextSeg = segments[i + 1];
+          const output = nextSeg?.type === 'observation' ? nextSeg.content : '';
+          const outputLines = output.split('\n').filter(l => l.trim());
+          const preview = outputLines.slice(0, 5).join('\n');
+          const hasMore = outputLines.length > 5;
+          
+          return (
+            <div key={i} className="my-4">
+              <div className="flex items-center gap-2 px-3 py-2 bg-dark/40 border border-border rounded-[8px] hover:bg-dark/60 transition-all w-full">
+                <div onClick={() => setTerminalExpanded(!terminalExpanded)} className="flex items-center gap-2 flex-1 cursor-pointer">
+                  <ChevronDown className={`w-3 h-3 text-tertiary/40 transition-transform ${terminalExpanded ? 'rotate-180' : ''}`} />
+                  <span className="ui-label text-[9px] text-tertiary/30 tracking-[0.2em]">TERMINAL</span>
+                </div>
+                {onOpenTerminal && (
+                  <div 
+                    onClick={() => onOpenTerminal()} 
+                    className="p-1 hover:text-accent text-accent/60 transition-colors cursor-pointer"
+                  >
+                    <Terminal className="w-3.5 h-3.5" />
+                  </div>
+                )}
+              </div>
+              {terminalExpanded && (
+                <div className="mt-2 px-4 py-3 bg-dark/20 border border-border rounded-[8px] max-h-[150px] overflow-y-auto">
+                  <p className="text-[9px] text-accent/70 font-mono mb-2">{cmd}</p>
+                  {output && (
+                    <pre className="text-[10px] text-tertiary/50 font-mono whitespace-pre-wrap">
+                      {hasMore ? preview + `\n...${outputLines.length - 5} more lines` : output}
+                    </pre>
+                  )}
+                </div>
+              )}
+            </div>
+          );
         }
-        return (
-          <span key={i} className="content-text leading-relaxed text-tertiary/60 block opacity-90">
-            {part.split('\n').map((line, lineIdx) => (
-              <React.Fragment key={lineIdx}>
-                {line}
-                {lineIdx !== part.split('\n').length - 1 && <br />}
-              </React.Fragment>
-            ))}
-          </span>
-        );
+        if (seg.type === 'observation') {
+          return null;
+        }
+        if (seg.type === 'text' && seg.content.trim()) {
+          const content = seg.content.trim();
+          const isTraceback = content.startsWith('Traceback') || content.startsWith('File "') || (content.includes('Error:') && content.includes('line '));
+          if (isTraceback) return null;
+          
+          const formatLine = (line: string) => {
+            const parts = line.split(/(`[^`]+`|'[a-z_]+')/).filter(Boolean);
+            return parts.map((part, idx) => {
+              if (part.startsWith('`') || (part.startsWith("'") && part.endsWith("'") && /^'[a-z_]+'$/.test(part))) {
+                const code = part.slice(1, -1);
+                return <code key={idx} className="px-1.5 py-0.5 bg-dark/40 rounded text-accent/80 font-mono text-[12px]">{code}</code>;
+              }
+              return <span key={idx}>{part}</span>;
+            });
+          };
+          
+          return (
+            <span key={i} className="content-text leading-relaxed text-tertiary/60 block opacity-90">
+              {content.split('\n').map((line, lineIdx) => (
+                <React.Fragment key={lineIdx}>
+                  {formatLine(line)}
+                  {lineIdx !== content.split('\n').length - 1 && <br />}
+                </React.Fragment>
+              ))}
+            </span>
+          );
+        }
+        return null;
       })}
     </div>
   );
 };
 
 const AIPanel: React.FC<AIPanelProps> = ({
-  messages, onSendMessage, onUpdateLastMessage, isProcessing, setProcessing, contextCode, fileTreeSummary, onApplyToSource, onRejectMessage, onCloseMobile, onNewConversation, isMobileView, files
+  messages, onSendMessage, onUpdateLastMessage, isProcessing, setProcessing, contextCode, fileTreeSummary, onApplyToSource, onRejectMessage, onCloseMobile, onNewConversation, onOpenTerminal, onTerminalCommand, isMobileView, files
 }) => {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [showFilePicker, setShowFilePicker] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [fileSearch, setFileSearch] = useState('');
+  const [conversations, setConversations] = useState<{ id: string; title: string; messages: ChatMessage[]; timestamp: number }[]>([]);
+  const [currentConvId, setCurrentConvId] = useState<string>(Date.now().toString());
+  const [editingConvId, setEditingConvId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isProcessing]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('cadence_conversations');
+    if (saved) {
+      try { setConversations(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    if (messages.length > 1) {
+      const title = messages.find(m => m.role === 'user')?.text.slice(0, 40) || 'new conversation';
+      const existing = conversations.find(c => c.id === currentConvId);
+      const updated = existing 
+        ? conversations.map(c => c.id === currentConvId ? { ...c, messages, timestamp: Date.now() } : c)
+        : [...conversations, { id: currentConvId, title, messages, timestamp: Date.now() }];
+      setConversations(updated);
+      localStorage.setItem('cadence_conversations', JSON.stringify(updated));
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showHistory && historyRef.current && !historyRef.current.contains(e.target as Node)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showHistory]);
+
+  const handleLoadConv = (id: string) => {
+    const conv = conversations.find(c => c.id === id);
+    if (conv) {
+      conv.messages.forEach((m, i) => {
+        if (i === 0) onNewConversation?.();
+        setTimeout(() => onSendMessage(m), i * 10);
+      });
+      setCurrentConvId(id);
+      setShowHistory(false);
+    }
+  };
+
+  const handleDeleteConv = (id: string) => {
+    const updated = conversations.filter(c => c.id !== id);
+    setConversations(updated);
+    localStorage.setItem('cadence_conversations', JSON.stringify(updated));
+  };
+
+  const handleRenameConv = (id: string, newTitle: string) => {
+    const updated = conversations.map(c => c.id === id ? { ...c, title: newTitle } : c);
+    setConversations(updated);
+    localStorage.setItem('cadence_conversations', JSON.stringify(updated));
+    setEditingConvId(null);
+  };
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -264,12 +431,69 @@ const AIPanel: React.FC<AIPanelProps> = ({
           >
             <Plus className="w-4 h-4" />
           </button>
-          <button 
-            className="p-1.5 rounded-md hover:bg-white/5 transition-colors text-tertiary/40 hover:text-accent"
-            title="history"
-          >
-            <History className="w-4 h-4" />
-          </button>
+          <div className="relative" ref={historyRef}>
+            <button 
+              onClick={() => setShowHistory(!showHistory)}
+              className={`p-1.5 rounded-md hover:bg-white/5 transition-colors ${showHistory ? 'text-accent' : 'text-tertiary/40 hover:text-accent'}`}
+              title="history"
+            >
+              <History className="w-4 h-4" />
+            </button>
+            {showHistory && (
+              <div className="absolute top-full left-0 mt-2 w-72 p-4 border border-border rounded-large animate-in fade-in slide-in-from-top-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[200]" style={{ backgroundColor: 'var(--bg-dark)' }}>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="ui-label text-tertiary/30 tracking-[0.2em] font-black text-[9px]">HISTORY</span>
+                  <button onClick={() => setShowHistory(false)} className="text-tertiary/20 hover:text-secondary transition-colors">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                {conversations.length === 0 ? (
+                  <p className="text-tertiary/30 text-[11px] text-center py-4">no saved conversations</p>
+                ) : (
+                  <div className="space-y-1 max-h-[300px] overflow-y-auto">
+                    {conversations.map(conv => (
+                      <div key={conv.id} className="group relative flex items-center rounded-md hover:bg-white/5 transition-colors">
+                        {editingConvId === conv.id ? (
+                          <input
+                            autoFocus
+                            value={editingTitle}
+                            onChange={e => setEditingTitle(e.target.value)}
+                            onBlur={() => handleRenameConv(conv.id, editingTitle)}
+                            onKeyDown={e => e.key === 'Enter' && handleRenameConv(conv.id, editingTitle)}
+                            className="flex-1 bg-dark border border-border rounded px-2 py-1 text-[11px] text-tertiary/80 outline-none"
+                          />
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleLoadConv(conv.id)}
+                              className="flex-1 text-left p-2 pr-16"
+                            >
+                              <p className="text-tertiary/60 text-[11px] truncate">{conv.title}</p>
+                              <p className="text-tertiary/20 text-[9px]">{new Date(conv.timestamp).toLocaleDateString()}</p>
+                            </button>
+                            <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pr-2 pl-8 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(to right, transparent, var(--bg-dark) 20%, var(--bg-dark) 100%)' }}>
+                              <button 
+                                onClick={() => { setEditingConvId(conv.id); setEditingTitle(conv.title); }}
+                                className="p-1 text-tertiary/40 hover:text-accent transition-colors"
+                              >
+                                <Edit3 className="w-3 h-3" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteConv(conv.id)}
+                                className="p-1 text-tertiary/40 hover:text-secondary transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <div className="w-8" />
         {isMobileView ? (
@@ -298,6 +522,8 @@ const AIPanel: React.FC<AIPanelProps> = ({
                       text={msg.text}
                       onApply={msg.role === 'assistant' ? onApplyToSource : undefined}
                       onReject={onRejectMessage}
+                      onOpenTerminal={onOpenTerminal}
+                      onTerminalCommand={onTerminalCommand}
                    />
                    {msg.text === '' && isProcessing && idx === messages.length - 1 && (
                      <div className="flex items-center gap-4 animate-pulse pt-4">

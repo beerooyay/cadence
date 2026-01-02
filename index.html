@@ -177,6 +177,17 @@
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
+        
+        /* SVG gradient fill - use mask technique */
+        .gradient-svg {
+          background: var(--accent-gradient);
+          -webkit-mask-size: contain;
+          mask-size: contain;
+          -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+          mask-position: center;
+        }
 
         ::selection {
           background: rgb(var(--accent-rgb) / 0.3);

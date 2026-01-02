@@ -85,6 +85,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const root = document.documentElement;
+    
+    // set initial accent immediately to avoid flash
+    const initialGradient = ACCENTS[state.accentColor] || ACCENTS['g-orange'];
+    const initialMatch = initialGradient.match(/#[a-fA-F0-9]{6}/g);
+    if (initialMatch?.[0]) {
+      root.style.setProperty('--accent', initialMatch[0]);
+    }
 
     const rgbof = (hex: string) => {
       if (!hex || hex[0] !== '#' || (hex.length !== 7 && hex.length !== 4)) return null;
@@ -106,10 +113,13 @@ const App: React.FC = () => {
 
       const gradient = ACCENTS[state.accentColor] || ACCENTS['g-orange'];
       root.style.setProperty('--accent-gradient', gradient);
-      // extract first color from gradient for places that need a solid (terminal cursor, etc)
+      // extract colors from gradient for svg fills and solid uses
       const gradientMatch = gradient.match(/#[a-fA-F0-9]{6}/g);
       const primaryColor = gradientMatch?.[0] || '#f97316';
+      const secondaryColor = gradientMatch?.[1] || primaryColor;
       root.style.setProperty('--accent', primaryColor);
+      root.style.setProperty('--accent-start', primaryColor);
+      root.style.setProperty('--accent-end', secondaryColor);
       root.style.setProperty('--accent-rgb', rgbof(primaryColor) || '249 115 22');
 
       if (typeof window !== 'undefined' && (window as any).electronAPI) {
@@ -549,7 +559,7 @@ const App: React.FC = () => {
 
         <div className={`flex flex-col border-l border-border overflow-hidden ${shouldFullscreenChat ? 'fixed inset-0 z-[200] slide-from-right' : isChatOpen ? 'relative' : 'hidden lg:relative'} ${isResizing === 'chat' ? '' : 'sidebar-transition'}`} style={{ width: shouldFullscreenChat ? '100%' : (isChatOpen ? chatWidth : 0), backgroundColor: 'var(--bg-panel)' }}>
           {isChatOpen && !shouldFullscreenChat && <div onMouseDown={startResizing('chat')} className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-[160] hover:bg-accent/20 transition-colors" />}
-          <AIPanel messages={state.messages} onSendMessage={m => setState(s => ({...s, messages: [...s.messages, m]}))} onUpdateLastMessage={text => setState(prev => { const msgs = [...prev.messages]; msgs[msgs.length-1].text = text; return {...prev, messages: msgs}; })} isProcessing={state.isAIProcessing} setProcessing={p => setState(s => ({...s, isAIProcessing: p}))} contextCode={activeFile?.content || ''} fileTreeSummary={projectManifest} onApplyToSource={(code) => setPendingCode(code)} onRejectMessage={(id) => setState(s => ({...s, messages: s.messages.filter(m => m.id !== id)}))} onCloseMobile={() => { setMobileView('dash'); setIsChatOpen(false); }} onNewConversation={() => setState(s => ({...s, messages: [{ id: Date.now().toString(), role: 'assistant', text: 'cadence ide active. kernel synchronized.', timestamp: Date.now() }]}))} isMobileView={shouldFullscreenChat} files={state.files} />
+          <AIPanel messages={state.messages} onSendMessage={m => setState(s => ({...s, messages: [...s.messages, m]}))} onUpdateLastMessage={text => setState(prev => { const msgs = [...prev.messages]; msgs[msgs.length-1].text = text; return {...prev, messages: msgs}; })} isProcessing={state.isAIProcessing} setProcessing={p => setState(s => ({...s, isAIProcessing: p}))} contextCode={activeFile?.content || ''} fileTreeSummary={projectManifest} onApplyToSource={(code) => setPendingCode(code)} onRejectMessage={(id) => setState(s => ({...s, messages: s.messages.filter(m => m.id !== id)}))} onCloseMobile={() => { setMobileView('dash'); setIsChatOpen(false); }} onNewConversation={() => setState(s => ({...s, messages: [{ id: Date.now().toString(), role: 'assistant', text: 'cadence ide active. kernel synchronized.', timestamp: Date.now() }]}))} onOpenTerminal={() => setConsoleHeight(Math.max(consoleHeight, 200))} onTerminalCommand={(cmd) => { if (window.pty) { window.pty.write(cmd + '\n'); setConsoleHeight(Math.max(consoleHeight, 200)); } }} isMobileView={shouldFullscreenChat} files={state.files} />
         </div>
       </div>
       <StatusBar 

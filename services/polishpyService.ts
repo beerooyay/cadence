@@ -2,15 +2,20 @@
  * generates a high-fidelity project manifest for the ai
  */
 export const generateProjectManifest = (files: Record<string, any>) => {
-  return Object.values(files)
+  const root = Object.values(files).find(f => f.parentId === null);
+  const rootPath = root?.path || '/unknown';
+  
+  const tree = Object.values(files)
     .map(f => {
-      const info = `${f.type === 'folder' ? '[DIR]' : '[FILE]'} ${f.name}`;
+      const info = `${f.type === 'folder' ? '[DIR]' : '[FILE]'} ${f.path}`;
       if (f.name.endsWith('.toml') || f.name.endsWith('.json') || f.name === 'README.md') {
         return `${info}\n--- CONTENT ---\n${f.content}\n---------------`;
       }
       return info;
     })
     .join('\n');
+  
+  return `PROJECT ROOT: ${rootPath}\n\n${tree}`;
 };
 
 export const polishpyCLI = (code: string, mode: 'check' | 'fix' = 'check'): {
