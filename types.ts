@@ -10,7 +10,9 @@ export interface FileSystemItem {
   size?: number;
   lastModified?: number;
   hash?: string;
-  children?: string[]; // IDs of children
+  children?: string[];
+  path?: string;
+  isDirty?: boolean;
 }
 
 export interface EditorTab {
@@ -31,12 +33,6 @@ export interface ConsoleLog {
   type: 'info' | 'error' | 'success' | 'system';
 }
 
-export interface GhostSuggestion {
-  original: string;
-  suggested: string;
-  description: string;
-}
-
 export enum SecurityTier {
   READ_ONLY = 'READ_ONLY',
   READ_WRITE = 'READ_WRITE',
@@ -45,9 +41,7 @@ export enum SecurityTier {
 }
 
 export type ThemeMode = 'dark' | 'light' | 'dawn';
-export type AccentColor = 
-  | 'orange' | 'blue' | 'purple' | 'pink' | 'green' | 'red' 
-  | 'g-red' | 'g-blue' | 'g-yellow';
+export type AccentColor = 'g-red' | 'g-orange' | 'g-yellow' | 'g-green' | 'g-blue' | 'g-purple';
 
 export interface AppState {
   files: Record<string, FileSystemItem>;
@@ -59,6 +53,4 @@ export interface AppState {
   isAIProcessing: boolean;
   themeMode: ThemeMode;
   accentColor: AccentColor;
-  ghostSuggestion: GhostSuggestion | null;
-  isAnalyzing: boolean;
 }

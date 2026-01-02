@@ -1,0 +1,7 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="200" fill="#0d0d0d"/>
+  <g transform="translate(512, 512)">
+    <circle cx="-280" cy="-5" r="18" fill="#ffffff"/>
+    <text x="0" y="0" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="130" font-weight="800" fill="#ffffff" letter-spacing="0.1em">cadence</text>
+  </g>
+</svg>

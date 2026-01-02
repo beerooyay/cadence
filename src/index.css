@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: rgb(var(--accent-rgb) / <alpha-value>);
+  --color-secondary: rgb(var(--secondary-rgb) / <alpha-value>);
+  --color-tertiary: rgb(var(--tertiary-rgb) / <alpha-value>);
+  --color-dark: rgb(var(--bg-dark-rgb) / <alpha-value>);
+  --color-panel: rgb(var(--bg-panel-rgb) / <alpha-value>);
+  --color-border: rgb(var(--border-rgb) / <alpha-value>);
+  --radius-base: 8px;
+  --radius-large: 12px;
+}

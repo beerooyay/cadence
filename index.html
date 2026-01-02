@@ -1,70 +1,53 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>nova-ide</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>cadence-ide</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            colors: {
-              accent: 'var(--accent)',
-              secondary: 'var(--secondary)',
-              tertiary: 'var(--tertiary)',
-              dark: 'var(--bg-dark)',
-              panel: 'var(--bg-panel)',
-              border: 'var(--border)'
-            },
-            borderRadius: {
-              'base': '8px',
-              'large': '12px'
-            }
-          }
-        }
-      }
-    </script>
     <style>
         :root {
             --bg-dark: #050505;
+            --bg-dark-rgb: 5 5 5;
             --bg-panel: #0a0a0a;
+            --bg-panel-rgb: 10 10 10;
             --border: #111111;
+            --border-rgb: 17 17 17;
             --tertiary: #ede1d3;
+            --tertiary-rgb: 237 225 211;
             --secondary: #ef4444;
+            --secondary-rgb: 239 68 68;
             --accent: #f97316;
-            
-            --accent-orange: #f97316;
-            --accent-blue: #3b82f6;
-            --accent-purple: #a855f7;
-            --accent-pink: #ec4899;
-            --accent-green: #22c55e;
-            --accent-red: #ef4444;
-
-            /* Gradients */
-            --accent-g-red: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
-            --accent-g-blue: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
-            --accent-g-yellow: linear-gradient(135deg, #facc15 0%, #f97316 100%);
+            --accent-gradient: linear-gradient(135deg, #ffa940 0%, #ff7a00 100%);
+            --accent-rgb: 249 115 22;
         }
 
         .theme-light {
             --bg-dark: #f0f0f0;
+            --bg-dark-rgb: 240 240 240;
             --bg-panel: #ffffff;
+            --bg-panel-rgb: 255 255 255;
             --border: #e2e2e2;
+            --border-rgb: 226 226 226;
             --tertiary: #000000;
+            --tertiary-rgb: 0 0 0;
+            --secondary: #ef4444;
+            --secondary-rgb: 239 68 68;
         }
 
         .theme-dawn {
             --bg-dark: #1b1c1e;
+            --bg-dark-rgb: 27 28 30;
             --bg-panel: #212226;
+            --bg-panel-rgb: 33 34 38;
             --border: #2a2b2f;
-            --tertiary: #e1e1e1;
+            --border-rgb: 42 43 47;
+            --tertiary: #ffffff;
+            --tertiary-rgb: 255 255 255;
+            --secondary: #ef4444;
+            --secondary-rgb: 239 68 68;
         }
 
         html, body {
@@ -93,7 +76,7 @@
             flex-direction: column;
         }
 
-        .nova-brand { 
+        .cadence-brand { 
             text-transform: lowercase !important; 
             font-family: 'JetBrains Mono', monospace !important;
             font-weight: 800 !important; 
@@ -141,14 +124,20 @@
         .no-wrap { white-space: nowrap; flex-shrink: 0; }
         
         * {
-            transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-color: var(--border) !important;
         }
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        button, .transition-all {
+            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+        }
+
+        .gpu {
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        ::-webkit-scrollbar { display: none; }
+        * { scrollbar-width: none; }
 
         input, textarea { outline: none; }
         .active-press:active { transform: scale(0.96); }
@@ -156,10 +145,43 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .sidebar-transition {
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.2s ease-out, transform 0.2s ease-out;
+        }
+
+        .fast-transition {
+            transition: all 0.1s ease;
+        }
+
+        .slide-from-right {
+            animation: slideFromRight 0.2s ease-out;
+        }
+
+        @keyframes slideFromRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, .sidebar-transition, button {
+                transition: none !important;
+                animation: none !important;
+            }
         }
         
         *:focus { outline: none; }
+
+        /* GLOBAL GRADIENT TEXT - use this class for ALL accent text */
+        .gradient-text {
+          background: var(--accent-gradient);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        ::selection {
+          background: rgb(var(--accent-rgb) / 0.3);
+          color: inherit;
+        }
 
         @keyframes lava-flow {
           0% { transform: translateX(-100%) skewX(-15deg); }
@@ -199,22 +221,29 @@
           filter: blur(60px);
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@^0.474.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <script>
+      (function() {
+        try {
+          const saved = localStorage.getItem('cadence-state');
+          if (saved) {
+            const state = JSON.parse(saved);
+            const theme = state.themeMode || 'dark';
+            document.documentElement.className = `theme-${theme}`;
+            document.documentElement.classList.toggle('dark', theme === 'dark' || theme === 'dawn');
+          } else {
+             document.documentElement.className = 'theme-dark';
+             document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+            console.error(e);
+            document.documentElement.className = 'theme-dark';
+            document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
 </head>
-<body class="theme-dark">
+<body>
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

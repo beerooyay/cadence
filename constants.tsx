@@ -1,66 +1,44 @@
-import { FileSystemItem, SecurityTier } from './types';
+import { FileSystemItem, AccentColor } from './types';
 
-export const INITIAL_FILES: Record<string, FileSystemItem> = {
-  'root': { id: 'root', name: 'nova-workspace', type: 'folder', parentId: null, children: ['src', 'package.json', 'pyproject.toml', 'README.md'] },
-  'src': { id: 'src', name: 'src', type: 'folder', parentId: 'root', children: ['main.py', 'kernel.py', 'utils.ts'] },
-  'main.py': { 
-    id: 'main.py', 
-    name: 'main.py', 
-    type: 'file', 
-    parentId: 'src', 
-    content: `def mandelbrot(c, max_iter):
-    z = 0
-    for n in range(max_iter):
-        if abs(z) > 2:
-            return n
-        z = z*z + c
-    return max_iter
+export const THEME = {
+  dark: { bg: '#050505', panel: '#0a0a0a', border: '#111111', text: '#ede1d3' },
+  light: { bg: '#f0f0f0', panel: '#ffffff', border: '#e2e2e2', text: '#000000' },
+  dawn: { bg: '#1b1c1e', panel: '#212226', border: '#2a2b2f', text: '#ffffff' }
+} as const;
 
-def render_fractal():
-    rows, cols = 30, 80
-    chars = " .:-=+*#%@"
-    
-    print("NOVA KERNEL: STARTING FRACTAL COMPUTE...")
-    for y in range(rows):
-        line = ""
-        for x in range(cols):
-            c = complex(-2.0 + 3.0*x/cols, -1.5 + 3.0*y/rows)
-            m = mandelbrot(c, 20)
-            line += chars[m % len(chars)]
-        print(line)
-    print("NOVA KERNEL: COMPUTE SUCCESSFUL.")
-
-if __name__ == "__main__":
-    render_fractal()` 
-  },
-  'kernel.py': { id: 'kernel.py', name: 'kernel.py', type: 'file', parentId: 'src', content: '# Core Logic Extensions\nimport sys\n\ndef init():\n    print("INIT SUCCESS")' },
-  'utils.ts': { id: 'utils.ts', name: 'utils.ts', type: 'file', parentId: 'src', content: 'export const format = (v: any) => JSON.stringify(v);' },
-  'package.json': { id: 'package.json', name: 'package.json', type: 'file', parentId: 'root', content: '{\n  "name": "nova-ide",\n  "version": "1.0.0"\n}' },
-  'pyproject.toml': { 
-    id: 'pyproject.toml', 
-    name: 'pyproject.toml', 
-    type: 'file', 
-    parentId: 'root', 
-    content: `[tool.polishpy]
-python_version = "3.10"
-include = ["src"]
-
-[tool.ruff]
-line-length = 88
-target-version = "py310"
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "B", "C4"]
-fixable = ["ALL"]
-
-[tool.black]
-line-length = 88
-target-version = ["py310"]` 
-  },
-  'README.md': { id: 'README.md', name: 'README.md', type: 'file', parentId: 'root', content: '# NovaIDE\n\nThe future of coding with PolishPy integration.' }
+export const ACCENTS: Record<AccentColor, string> = {
+  'g-red': 'linear-gradient(135deg, #ff6b6b 0%, #ff3d3d 100%)',
+  'g-orange': 'linear-gradient(135deg, #ffa940 0%, #ff7a00 100%)',
+  'g-yellow': 'linear-gradient(135deg, #fff7cc 0%, #ffd966 100%)',
+  'g-green': 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
+  'g-blue': 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+  'g-purple': 'linear-gradient(135deg, #c084fc 0%, #a855f7 100%)'
 };
 
-export const MOCK_CHUNKS = [
-  { web: { uri: "https://github.com/features/copilot", title: "GitHub Copilot" } },
-  { web: { uri: "https://cursor.com", title: "Cursor IDE" } }
-];
+export const FALLBACK = { text: '#ede1d3', bg: '#050505' };
+
+export const INITIAL_FILES: Record<string, FileSystemItem> = {
+  'root': { id: 'root', name: 'workspace', type: 'folder', parentId: null, children: ['test.py'] },
+  'test.py': { 
+    id: 'test.py', 
+    name: 'test.py', 
+    type: 'file', 
+    parentId: 'root', 
+    content: `# test file for cadence ide
+from typing import List, Dict, Optional
+
+def greet(name: str) -> str:
+    return f"hello {name}"
+
+def process(items: List[str], config: Dict) -> Optional[str]:
+    result = None
+    for item in items:
+        if item:
+            result = str(item)
+    return result
+
+if __name__ == "__main__":
+    print(greet("cadence"))
+` 
+  }
+};
