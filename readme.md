@@ -20,6 +20,7 @@ the cadence model is fine-tuned on polishpy, a python code quality framework tha
 - **polishpy integration** - automatic type checking, formatting, linting
 - **terminal** - full pty terminal with custom prompt
 - **file explorer** - browse, create, edit files
+- **web explorer** - browse the web and fetch resources
 - **theming** - dark/light/dawn modes with accent colors
 
 ---
@@ -138,4 +139,4 @@ mit
 
 ---
 
-built by blaize
+built by @ceeboozwah and @beerooyay
