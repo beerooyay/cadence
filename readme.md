@@ -4,33 +4,27 @@ a custom-built ide powered by local ai models trained on polishpy.
 
 <br/>
 
-<p align="center">
-  <img src="assets/pic1.png" width="90%" style="border-radius: 12px;" />
-</p>
+<picture>
+  <img src="assets/pic1.png" width="100%" style="border-radius: 16px;" />
+</picture>
 
-<p align="center">
-  <em>ai-powered code polish with diff preview and accept/reject workflow</em>
-</p>
+*ai-powered code polish with diff preview and accept/reject workflow*
 
 <br/>
 
-<p align="center">
-  <img src="assets/pic2.png" width="90%" style="border-radius: 12px;" />
-</p>
+<picture>
+  <img src="assets/pic2.png" width="100%" style="border-radius: 16px;" />
+</picture>
 
-<p align="center">
-  <em>customizable themes with gradient accents and local model selection</em>
-</p>
+*customizable themes with gradient accents and local model selection*
 
 <br/>
 
-<p align="center">
-  <img src="assets/pic3.png" width="90%" style="border-radius: 12px;" />
-</p>
+<picture>
+  <img src="assets/pic3.png" width="100%" style="border-radius: 16px;" />
+</picture>
 
-<p align="center">
-  <em>conversational ai assistant with tool calling and code suggestions</em>
-</p>
+*conversational ai assistant with tool calling and code suggestions*
 
 <br/>
 
