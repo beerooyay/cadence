@@ -26,27 +26,27 @@ the cadence model is fine-tuned on polishpy, a python code quality framework tha
 
 <br/>
 
-![conversational ai](assets/pic3.png)
+![code suggestions](assets/pic1.png)
 
-*conversational ai assistant with tool calling and code suggestions*
-
-<br/>
-
-![code polish workflow](assets/pic1.png)
-
-*ai-powered code polish with diff preview and accept/reject workflow*
+*ai-powered code suggestions with accept/reject workflow*
 
 <br/>
 
-![customizable themes](assets/pic2.png)
+![terminal output](assets/pic2.png)
 
-*customizable themes with gradient accents and local model selection*
+*working terminal with python execution and ai chat*
 
 <br/>
 
-![embedded browser](assets/pic4.png)
+![theming](assets/pic3.png)
 
-*embedded chromium browser with web search and fetch tools for the ai*
+*customizable themes with accent colors and model selection*
+
+<br/>
+
+![browser](assets/pic4.png)
+
+*embedded browser with web search and fetch tools*
 
 <br/>
 
