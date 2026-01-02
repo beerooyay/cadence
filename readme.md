@@ -44,6 +44,12 @@ the cadence model is fine-tuned on polishpy, a python code quality framework tha
 
 <br/>
 
+![embedded browser](assets/pic4.png)
+
+*embedded chromium browser with web search and fetch tools for the ai*
+
+<br/>
+
 ---
 
 ## stack
