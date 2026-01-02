@@ -141,6 +141,8 @@ def gen():
 - writefile: input: path|||content  
 - execute: input: command (use python3, absolute paths)
 - listdir: input: absolute path
+- webfetch: input: url (fetches and extracts text from webpage)
+- websearch: input: query (returns google search url)
 
 format:
 action: toolname

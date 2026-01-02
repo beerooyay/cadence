@@ -285,14 +285,16 @@ const AIPanel: React.FC<AIPanelProps> = ({
   useEffect(() => {
     if (messages.length > 1) {
       const title = messages.find(m => m.role === 'user')?.text.slice(0, 40) || 'new conversation';
-      const existing = conversations.find(c => c.id === currentConvId);
-      const updated = existing 
-        ? conversations.map(c => c.id === currentConvId ? { ...c, messages, timestamp: Date.now() } : c)
-        : [...conversations, { id: currentConvId, title, messages, timestamp: Date.now() }];
-      setConversations(updated);
-      localStorage.setItem('cadence_conversations', JSON.stringify(updated));
+      setConversations(prev => {
+        const existing = prev.find(c => c.id === currentConvId);
+        const updated = existing 
+          ? prev.map(c => c.id === currentConvId ? { ...c, messages, timestamp: Date.now() } : c)
+          : [...prev, { id: currentConvId, title, messages, timestamp: Date.now() }];
+        localStorage.setItem('cadence_conversations', JSON.stringify(updated));
+        return updated;
+      });
     }
-  }, [messages]);
+  }, [messages, currentConvId]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -439,7 +441,7 @@ const AIPanel: React.FC<AIPanelProps> = ({
       <div className="flex items-center justify-between px-4 h-10 border-b border-border shrink-0 z-30" style={{ backgroundColor: 'var(--bg-dark)' }}>
         <div className="flex items-center gap-2">
           <button 
-            onClick={onNewConversation} 
+            onClick={() => { setCurrentConvId(Date.now().toString()); onNewConversation?.(); }} 
             className="p-1.5 rounded-md hover:bg-white/5 transition-colors text-tertiary/40 hover:text-accent"
             title="new conversation"
           >
