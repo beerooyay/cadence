@@ -20,6 +20,7 @@ declare global {
       removeListeners: () => void;
     };
     _ptySpawned?: boolean;
+    _terminalBuffer?: string;
   }
 }
 
@@ -75,8 +76,11 @@ const Terminal: React.FC<TerminalProps> = ({ cwd, height = 300 }) => {
       window.pty.removeListeners();
       
       // set up fresh listeners
+      window._terminalBuffer = window._terminalBuffer || '';
       window.pty.onData((data: string) => {
         if (termRef.current) termRef.current.write(data);
+        // capture last 2000 chars of terminal output for LLM context
+        window._terminalBuffer = (window._terminalBuffer + data).slice(-2000);
       });
       window.pty.onExit((code: number) => {
         if (termRef.current) termRef.current.write(`\r\n[exited: ${code}]\r\n`);

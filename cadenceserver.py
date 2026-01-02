@@ -43,7 +43,11 @@ def execute(cmd):
     try:
         result = subprocess.run(cmd.strip(), shell=True, capture_output=True, text=True, timeout=30)
         output = result.stdout + result.stderr
-        return output[:2000] if output else "executed"
+        if not output.strip():
+            output = f"[exit code: {result.returncode}]"
+        return output[:2000]
+    except subprocess.TimeoutExpired:
+        return "error: command timed out after 30s"
     except Exception as e:
         return f"error: {e}"
 

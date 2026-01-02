@@ -434,7 +434,8 @@ const AIPanel: React.FC<AIPanelProps> = ({
     onSendMessage(assistantMsg);
 
     const historyForContext = messages.map(m => ({ role: m.role, text: m.text }));
-    await generateAIResponseStream(fullPrompt, contextCode, fileTreeSummary, onUpdateLastMessage, historyForContext);
+    const terminalContext = (window as any)._terminalBuffer ? `\n\nrecent terminal output:\n${(window as any)._terminalBuffer.slice(-500)}` : '';
+    await generateAIResponseStream(fullPrompt, contextCode + terminalContext, fileTreeSummary, onUpdateLastMessage, historyForContext);
     setProcessing(false);
   };
 
