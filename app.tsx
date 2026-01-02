@@ -135,6 +135,46 @@ const App: React.FC = () => {
 
   const projectManifest = useMemo(() => generateProjectManifest(state.files), [state.files]);
 
+  // poll for file system changes (more reliable than fs.watch IPC)
+  const fileCountRef = useRef(Object.keys(state.files).length);
+  const rootPathRef = useRef<string | null>(null);
+  
+  useEffect(() => {
+    const files = state.files as Record<string, FileSystemItem>;
+    const rootFile = Object.values(files).find(f => f.parentId === null);
+    rootPathRef.current = rootFile?.path || null;
+    fileCountRef.current = Object.keys(files).length;
+  }, [state.files]);
+  
+  useEffect(() => {
+    const checkForChanges = async () => {
+      if (!rootPathRef.current) return;
+      try {
+        const nodes = await loadFolderTree(rootPathRef.current);
+        const newCount = Object.keys(nodes).length;
+        if (newCount !== fileCountRef.current) {
+          fileCountRef.current = newCount;
+          const convertedFiles: Record<string, FileSystemItem> = {};
+          for (const [id, node] of Object.entries(nodes)) {
+            convertedFiles[id] = {
+              id: node.id,
+              name: node.name,
+              type: node.type,
+              parentId: node.parentId,
+              path: node.path,
+              children: node.children,
+              content: node.type === 'file' ? '' : undefined
+            };
+          }
+          setState(s => ({ ...s, files: convertedFiles }));
+        }
+      } catch {}
+    };
+    
+    const interval = setInterval(checkForChanges, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   const logToTerminal = useCallback((text: string, type: ConsoleLog['type'] = 'info') => {
     setState(s => ({
       ...s,
@@ -365,6 +405,11 @@ const App: React.FC = () => {
       }));
       
       logToTerminal(`LOADED: ${Object.keys(convertedFiles).length} items`, 'success');
+      
+      // start watching for file changes
+      if (window.fs?.watch) {
+        window.fs.watch(folderPath);
+      }
     } catch (e) {
       logToTerminal(`FAILED TO LOAD FOLDER`, 'error');
     }

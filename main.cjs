@@ -7,6 +7,7 @@ const pty = require('node-pty');
 let mainWindow;
 let ptyProcess = null;
 let mlxProcess = null;
+let fileWatcher = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -150,6 +151,36 @@ function registerHandlers() {
 
   ipcMain.handle('fs:exists', async (e, targetPath) => {
     return fs.existsSync(targetPath);
+  });
+
+  ipcMain.handle('fs:watch', async (e, dirPath) => {
+    console.log('[MAIN] fs:watch called for:', dirPath);
+    if (fileWatcher) {
+      fileWatcher.close();
+      fileWatcher = null;
+    }
+    try {
+      fileWatcher = fs.watch(dirPath, { recursive: true }, (eventType, filename) => {
+        console.log('[MAIN] fs:watch event:', eventType, filename);
+        if (filename && !filename.includes('node_modules') && !filename.startsWith('.')) {
+          console.log('[MAIN] sending fs:changed to renderer');
+          mainWindow?.webContents.send('fs:changed', { eventType, filename, dirPath });
+        }
+      });
+      console.log('[MAIN] watcher started successfully');
+      return { success: true };
+    } catch (err) {
+      console.log('[MAIN] watcher error:', err.message);
+      return { error: err.message };
+    }
+  });
+
+  ipcMain.handle('fs:unwatch', async () => {
+    if (fileWatcher) {
+      fileWatcher.close();
+      fileWatcher = null;
+    }
+    return { success: true };
   });
 
   // window controls

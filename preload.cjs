@@ -15,7 +15,20 @@ contextBridge.exposeInMainWorld('fs', {
   createFolder: (path) => ipcRenderer.invoke('fs:createFolder', path),
   delete: (path) => ipcRenderer.invoke('fs:delete', path),
   rename: (oldPath, newPath) => ipcRenderer.invoke('fs:rename', oldPath, newPath),
-  exists: (path) => ipcRenderer.invoke('fs:exists', path)
+  exists: (path) => ipcRenderer.invoke('fs:exists', path),
+  watch: (dirPath) => {
+    console.log('[PRELOAD] fs.watch called for:', dirPath);
+    return ipcRenderer.invoke('fs:watch', dirPath);
+  },
+  unwatch: () => ipcRenderer.invoke('fs:unwatch'),
+  onChanged: (callback) => {
+    console.log('[PRELOAD] fs.onChanged listener registered');
+    ipcRenderer.removeAllListeners('fs:changed');
+    ipcRenderer.on('fs:changed', (e, data) => {
+      console.log('[PRELOAD] fs:changed received:', data);
+      callback(data);
+    });
+  }
 });
 
 contextBridge.exposeInMainWorld('polishpy', {

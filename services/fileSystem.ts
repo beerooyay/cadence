@@ -10,6 +10,9 @@ declare global {
       delete: (path: string) => Promise<{ success: boolean } | { error: string }>;
       rename: (oldPath: string, newPath: string) => Promise<{ success: boolean } | { error: string }>;
       exists: (path: string) => Promise<boolean>;
+      watch: (dirPath: string) => Promise<{ success: boolean } | { error: string }>;
+      unwatch: () => Promise<{ success: boolean }>;
+      onChanged: (callback: (data: { eventType: string; filename: string; dirPath: string }) => void) => void;
     };
   }
 }
