@@ -78,14 +78,8 @@ const Editor: React.FC<EditorProps> = ({
         })}
       </div>
 
-      <div className="flex items-center justify-between px-3 lg:px-6 py-2 border-b border-border bg-dark/20 h-14 shrink-0 relative z-50 gap-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center justify-between px-3 lg:px-6 py-2 bg-dark/20 h-14 shrink-0 relative z-50 gap-2 overflow-x-auto no-scrollbar">
         <div className="hidden lg:flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-3 px-4 py-1.5 bg-panel border border-border rounded-[8px]">
-            <Hash className={`w-3.5 h-3.5 transition-colors ${isScanning || isPolishing ? 'text-accent animate-pulse' : 'text-accent/30'}`} />
-            <span className="ui-label text-tertiary/30 whitespace-nowrap text-[10px]">
-              {isScanning ? 'SCAN' : isPolishing ? 'POLISH' : 'OK'}
-            </span>
-          </div>
         </div>
 
         <div className="flex items-center gap-2 lg:gap-3 shrink-0">
