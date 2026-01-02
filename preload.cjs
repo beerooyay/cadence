@@ -57,29 +57,17 @@ contextBridge.exposeInMainWorld('web', {
 });
 
 contextBridge.exposeInMainWorld('pty', {
-  spawn: (cwd) => {
-    console.log('[PRELOAD] pty.spawn called');
-    return ipcRenderer.invoke('pty:spawn', cwd);
-  },
+  spawn: (cwd) => ipcRenderer.invoke('pty:spawn', cwd),
   write: (data) => ipcRenderer.invoke('pty:write', data),
   resize: (cols, rows) => ipcRenderer.invoke('pty:resize', cols, rows),
   kill: () => ipcRenderer.invoke('pty:kill'),
   onData: (callback) => {
-    console.log('[PRELOAD] pty.onData listener registered');
-    ipcRenderer.on('pty:data', (e, data) => {
-      console.log('[PRELOAD] pty:data received:', data.length, 'bytes');
-      callback(data);
-    });
+    ipcRenderer.on('pty:data', (e, data) => callback(data));
   },
   onExit: (callback) => {
-    console.log('[PRELOAD] pty.onExit listener registered');
-    ipcRenderer.on('pty:exit', (e, code) => {
-      console.log('[PRELOAD] pty:exit received:', code);
-      callback(code);
-    });
+    ipcRenderer.on('pty:exit', (e, code) => callback(code));
   },
   removeListeners: () => {
-    console.log('[PRELOAD] removing pty listeners');
     ipcRenderer.removeAllListeners('pty:data');
     ipcRenderer.removeAllListeners('pty:exit');
   }

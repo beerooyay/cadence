@@ -72,14 +72,11 @@ const Terminal: React.FC<TerminalProps> = ({ cwd, height = 300 }) => {
     fitRef.current = fit;
 
     if (window.pty) {
-      // remove old listeners first
       window.pty.removeListeners();
-      
-      // set up fresh listeners
       window._terminalBuffer = window._terminalBuffer || '';
+      
       window.pty.onData((data: string) => {
         if (termRef.current) termRef.current.write(data);
-        // capture last 2000 chars of terminal output for LLM context
         window._terminalBuffer = (window._terminalBuffer + data).slice(-2000);
       });
       window.pty.onExit((code: number) => {
@@ -93,7 +90,6 @@ const Terminal: React.FC<TerminalProps> = ({ cwd, height = 300 }) => {
         window.pty.resize(cols, rows);
       });
       
-      // only spawn if not already spawned
       if (!window._ptySpawned) {
         window._ptySpawned = true;
         window.pty.spawn(cwd);

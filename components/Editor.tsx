@@ -149,9 +149,11 @@ const Editor: React.FC<EditorProps> = ({
             {terminalOpen ? <ChevronDown className="w-4 h-4 text-tertiary/10" /> : <ChevronUp className="w-4 h-4 text-tertiary/10" />}
           </div>
 
-          <div className={`flex-1 min-h-0 bg-dark overflow-hidden ${terminalOpen ? '' : 'hidden'}`}>
-            <Terminal height={consoleHeight - 40} />
-          </div>
+          {terminalOpen && (
+            <div className="flex-1 min-h-0 bg-dark overflow-hidden">
+              <Terminal height={consoleHeight - 40} />
+            </div>
+          )}
         </div>
       </div>
     </div>
