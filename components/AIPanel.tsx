@@ -524,7 +524,9 @@ const AIPanel: React.FC<AIPanelProps> = ({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth" ref={scrollRef}>
+      <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth relative" ref={scrollRef}>
+        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-panel to-transparent z-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-panel to-transparent z-10 pointer-events-none" />
         <div className="min-h-full flex flex-col justify-end max-w-4xl mx-auto px-8 py-8 space-y-8">
           {messages.map((msg, idx) => (
             <div key={msg.id} className="flex flex-col gap-2">
@@ -557,7 +559,7 @@ const AIPanel: React.FC<AIPanelProps> = ({
         </div>
       </div>
 
-      <div className="px-8 py-6 border-t border-border bg-dark/40 backdrop-blur-2xl shrink-0 z-20 pb-6 relative">
+      <div className="px-8 py-6 bg-dark/40 backdrop-blur-2xl shrink-0 z-20 pb-6 relative">
         <div className="max-w-4xl mx-auto">
           {showFilePicker && files && (
             <div className="absolute bottom-full left-8 right-8 mb-2 bg-panel border border-border rounded-[8px] shadow-2xl max-h-60 overflow-y-auto">

@@ -100,6 +100,10 @@ const Editor: React.FC<EditorProps> = ({
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-dark">
+        {/* fade gradients at top and bottom */}
+        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-dark to-transparent z-30 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-dark to-transparent z-30 pointer-events-none" />
+        
         {isPolishing && (
           <div className="lava-container">
             <div className="lava-overlay" />
