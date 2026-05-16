@@ -1,0 +1,21 @@
+; Outriders Prototype - Godot 4 project
+; Class & skill data system: 6 elemental classes, 10 skills each, 3 equipped.
+
+config_version=5
+
+[application]
+
+config/name="Outriders Prototype"
+config/description="Class and skill data system. Build out the looter-shooter on top of this."
+run/main_scene="res://scenes/character_creation.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+
+[autoload]
+
+SkillDB="*res://scripts/skill_database.gd"
+ClassRoster="*res://scripts/class_database.gd"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
